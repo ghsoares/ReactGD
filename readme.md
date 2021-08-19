@@ -87,9 +87,11 @@ func render() -> Dictionary:
 	}
 ```
 Here's the code in action:
+
 ![alt text](Demo%20Images/ClickButton.gif)
 
 And here's a generic todo list:
+
 ![alt text](Demo%20Images/TodoList.gif)
 
 All the demos can be found in [Demo Scenes](Demo%20Scenes)
