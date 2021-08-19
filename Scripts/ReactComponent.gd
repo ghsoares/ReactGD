@@ -1,4 +1,4 @@
-extends Control
+extends Node
 
 class_name ReactComponent
 
@@ -34,7 +34,7 @@ func _process(delta) -> void:
 	_dirty = false
 	
 	var elapsed = OS.get_ticks_msec() - start
-	print("Render: ", elapsed, " ms")
+	print("(" + name + ")" + " Render: ", elapsed, " ms")
 
 func _iterate_tree(
 	parent: Node, prev_component: Node, data: Dictionary
@@ -42,15 +42,18 @@ func _iterate_tree(
 	for k in data.keys():
 		var script = k[0]
 		var node_name = k[1]
+		var script_type = script.new().get_class()
 		
 		var change_type: int = data[k].change_type
 		var node_data :Dictionary = data[k].value
 		var children :Dictionary = node_data.get("children", {}).get("value", {})
 		
+		var ref: String = node_data.get("ref", {}).get("value", "")
+		
 		var node :Node = parent
 		
 		if change_type == 0:
-			if script.new().get_class() == "ReactComponent":
+			if script_type == "ReactComponent":
 				node = script.get_base().new()
 				node.script = script
 			else:
@@ -60,18 +63,22 @@ func _iterate_tree(
 			
 			parent.add_child(node)
 			_update_node(node, prev_component, node_data)
+			
+			if ref != "":
+				prev_component.set(ref, node)
 		elif change_type == 1:
 			node = parent.get_node(node_name)
-			
 			node.queue_free()
+			continue
 		else:
 			node = parent.get_node(node_name)
 			if node.get_class() == "ReactComponent":
 				node._dirty = true
 			
 			_update_node(node, prev_component, node_data)
-		
-		if node.get_class() == "ReactComponent": prev_component = node
+			
+			if ref != "":
+				prev_component.set(ref, node)
 		
 		if !children.empty(): _iterate_tree(node, prev_component, children)
 
@@ -121,11 +128,13 @@ func _update_theme(node: Control, theme: Dictionary) -> void:
 	var styles :Dictionary = theme.get("styles", {}).get("value", {})
 	var colors :Dictionary = theme.get("colors", {}).get("value", {})
 	var constants :Dictionary = theme.get("constants", {}).get("value", {})
+	var fonts :Dictionary = theme.get("fonts", {}).get("value", {})
 	var icons :Dictionary = theme.get("icons", {}).get("value", {})
 	
 	_update_styles(node, styles)
 	_update_colors(node, colors)
 	_update_constants(node, constants)
+	_update_fonts(node, fonts)
 	_update_icons(node, icons)
 
 func _update_styles(node: Control, styles: Dictionary) -> void:
@@ -145,7 +154,47 @@ func _update_styles(node: Control, styles: Dictionary) -> void:
 		
 		for prop in styles[b].value:
 			var prop_val = styles[b].value[prop].value
-			style_obj.set(prop, prop_val)
+			match prop:
+				"border_width":
+					style_obj.set("border_width_left", prop_val)
+					style_obj.set("border_width_right", prop_val)
+					style_obj.set("border_width_top", prop_val)
+					style_obj.set("border_width_bottom", prop_val)
+				"border_width_horizontal":
+					style_obj.set("border_width_left", prop_val)
+					style_obj.set("border_width_right", prop_val)
+				"border_width_vertical":
+					style_obj.set("border_width_top", prop_val)
+					style_obj.set("border_width_bottom", prop_val)
+				"corner_radius":
+					style_obj.set("corner_radius_top_left", prop_val)
+					style_obj.set("corner_radius_top_right", prop_val)
+					style_obj.set("corner_radius_bottom_left", prop_val)
+					style_obj.set("corner_radius_bottom_right", prop_val)
+				"expand_margin":
+					style_obj.set("expand_margin_left", prop_val)
+					style_obj.set("expand_margin_right", prop_val)
+					style_obj.set("expand_margin_top", prop_val)
+					style_obj.set("expand_margin_bottom", prop_val)
+				"expand_margin_horizontal":
+					style_obj.set("expand_margin_left", prop_val)
+					style_obj.set("expand_margin_right", prop_val)
+				"expand_margin_vertical":
+					style_obj.set("expand_margin_top", prop_val)
+					style_obj.set("expand_margin_bottom", prop_val)
+				"content_margin":
+					style_obj.set("content_margin_left", prop_val)
+					style_obj.set("content_margin_right", prop_val)
+					style_obj.set("content_margin_top", prop_val)
+					style_obj.set("content_margin_bottom", prop_val)
+				"content_margin_horizontal":
+					style_obj.set("content_margin_left", prop_val)
+					style_obj.set("content_margin_right", prop_val)
+				"content_margin_vertical":
+					style_obj.set("content_margin_top", prop_val)
+					style_obj.set("content_margin_bottom", prop_val)
+				_:
+					style_obj.set(prop, prop_val)
 
 func _update_colors(node: Control, colors: Dictionary) -> void:
 	for c in colors:
@@ -177,6 +226,29 @@ func _update_constants(node: Control, constants: Dictionary) -> void:
 			value = constants[c].value
 		
 		node.add_constant_override(c, value)
+
+func _update_fonts(node: Control, fonts: Dictionary) -> void:
+	for f in fonts:
+		var change_type = fonts[f].change_type
+		var value :DynamicFont = null
+		
+		if change_type == 0:
+			value = DynamicFont.new()
+			node.add_font_override(f, value)
+		elif change_type == 1:
+			node.add_font_override(f, null)
+			continue
+		else:
+			value = node.get_font(f)
+		
+		for prop in fonts[f].value:
+			var prop_val = fonts[f].value[prop].value
+			if prop == "src":
+				prop_val = ResourceLoader.load(prop_val)
+				value.font_data = prop_val
+				continue
+			
+			value.set(prop, prop_val)
 
 func _update_icons(node: Control, icons: Dictionary) -> void:
 	for i in icons:

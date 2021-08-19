@@ -14,7 +14,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://Scripts/DictionaryMethods.gd"
 }, {
-"base": "Control",
+"base": "Node",
 "class": "ReactComponent",
 "language": "GDScript",
 "path": "res://Scripts/ReactComponent.gd"
@@ -33,6 +33,7 @@ _global_script_class_icons={
 [application]
 
 config/name="ReactGD"
+run/main_scene="res://Demo Scenes/TodoList.tscn"
 config/icon="res://icon.png"
 
 [physics]
