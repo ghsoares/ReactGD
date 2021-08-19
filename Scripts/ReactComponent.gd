@@ -7,6 +7,10 @@ var _render_state: Dictionary
 var state: Dictionary
 
 func _enter_tree() -> void:
+	if Engine.editor_hint:
+		for c in get_children():
+			if !c.owner: c.queue_free()
+	
 	_dirty = true
 	state = {}
 	_render_state = {}

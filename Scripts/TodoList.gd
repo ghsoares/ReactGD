@@ -1,3 +1,4 @@
+tool
 extends ReactComponent
 
 const fonts_path := "res://Fonts/JetBrains/fonts/ttf/"
@@ -7,6 +8,7 @@ const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Lig
 const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
 
 class InputField:
+	tool
 	extends ReactComponent
 	
 	var theming := {
@@ -99,6 +101,7 @@ class InputField:
 	static func get_base(): return HBoxContainer
 
 class Task:
+	tool
 	extends ReactComponent
 	
 	signal task_done_toggle(id, val)
