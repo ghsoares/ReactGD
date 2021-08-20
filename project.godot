@@ -20,6 +20,11 @@ _global_script_classes=[ {
 "path": "res://Scripts/ReactComponent.gd"
 }, {
 "base": "Node",
+"class": "ReactGDTokenizer",
+"language": "GDScript",
+"path": "res://addons/ReactGD/ReactGDTokenizer.gd"
+}, {
+"base": "Node",
 "class": "StringMethods",
 "language": "GDScript",
 "path": "res://Scripts/StringMethods.gd"
@@ -27,6 +32,7 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "DictionaryMethods": "",
 "ReactComponent": "",
+"ReactGDTokenizer": "",
 "StringMethods": ""
 }
 
@@ -35,6 +41,10 @@ _global_script_class_icons={
 config/name="ReactGD"
 run/main_scene="res://Demo Scenes/TodoList.tscn"
 config/icon="res://icon.png"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/ReactGD/plugin.cfg" )
 
 [physics]
 
