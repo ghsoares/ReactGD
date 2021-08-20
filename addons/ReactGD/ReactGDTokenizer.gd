@@ -198,6 +198,7 @@ static func parse_tag(tag: Dictionary) -> Dictionary:
 			is_prop = true
 			prop_name = tokens[i].match.get_string()
 			prop_value = tokens[i + 2]
+			
 			if prop_name == "theme":
 				prop_type = PROP_TYPE.Theming
 			elif prop_name == "ref":
@@ -245,7 +246,7 @@ static func parse_tag(tag: Dictionary) -> Dictionary:
 					match prop_value.name:
 						"symbol":
 							prop_value = "\"" + prop_value.match.get_string() + "\""
-							skip = i + 2
+							skip = i + 4
 						"par_open":
 							var end = find_literal_close(i + 2, tokens, "par_open", "par_close")
 							if end != -1:
@@ -325,7 +326,6 @@ static func build_tree(tags: Array) -> Array:
 		
 		if tag_type == "tag_single" || tag_type == "tag_start":
 			for prop in tag.props:
-				print(prop.type, ", ", prop.value)
 				if prop.type == PROP_TYPE.Prop:
 					node_props['"' + prop.name + '"'] = prop.value
 				elif prop.type == PROP_TYPE.Signal:
@@ -345,15 +345,24 @@ static func build_tree(tags: Array) -> Array:
 					i = close_i + 1
 					skipped = true
 		
+		#print(node_props)
+		
 		if found:
-			tree.append({
+			var node := {
 				'"type"': tag_class,
-				'"props"': node_props,
-				'"signals\"': node_signals,
-				'"children\"': node_children,
-				'"theme"': node_theme,
-				'"ref"': node_ref
-			})
+			}
+			if !node_props.empty():
+				node['"props"'] = node_props
+			if !node_signals.empty():
+				node['"signals"'] = node_signals
+			if !node_children.empty():
+				node['"children"'] = node_children
+			if node_theme != "":
+				node['"theme"'] = node_theme
+			if node_ref != "":
+				node['"ref"'] = node_ref
+			
+			tree.append(node)
 		
 		if !skipped: i += 1
 	
@@ -364,8 +373,6 @@ static func gdx(code: String) -> String:
 	comment_reg.compile("#.*")
 	code = comment_reg.sub(code, "", true)
 	
-	print(code)
-	
 	code = code.replace("\n", " ")
 	code = code.substr(2, code.length() - 3)
 	
@@ -374,6 +381,7 @@ static func gdx(code: String) -> String:
 		tags[i] = parse_tag(tags[i])
 	
 	var tree = build_tree(tags)
+	#print(str(tree))
 	
 	return str(tree)
 

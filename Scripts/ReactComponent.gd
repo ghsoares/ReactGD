@@ -84,6 +84,8 @@ func _iterate_tree(
 			parent.add_child(node)
 			_update_node(node, prev_component, node_data)
 			
+			print(ref)
+			
 			if ref != "":
 				prev_component.set(ref, node)
 		elif node_change_type == 1:

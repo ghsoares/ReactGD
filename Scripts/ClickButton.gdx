@@ -1,15 +1,3 @@
-# ReactGD
-ReactGD is a extension tool used to create dynamic UIs with flexibility and efficiency, where the nodes are updated only when needed.
-
-## How it works
-Extending a script with `ReactComponent`, you can use the function `render`, which you return a Godot's `Dictionary`.
-In this dictionary, you put everything that must be rendered given the component's properties and state.
-
-The component only renders when there's a change in it's state or when a parent ReactComponent change the properties of the component.
-
-There's a example script of a simple button that tells how much times the button has clicked as text and changes the background color to a random color:
-
-```gdscript
 # This is a .gdx file, gdx supports
 # custom markdown language made for this addon
 
@@ -128,22 +116,3 @@ func render():
 			ref: "click_button"
 		></Button>
 	)
-```
-Here's the code in action:
-
-![alt text](Demo%20Images/ClickButton.gif)
-
-And here's a generic todo list:
-
-![alt text](Demo%20Images/TodoList.gif)
-
-All the demos can be found in [Demo Scenes](Demo%20Scenes)
-
-## TODO:
-- [ ] Rename some things (ReactGD is not the best way to call it, as it is only inspired by ReactJS, not based on);
-- [ ] Turn into a addon;
-- [ ] Add documentation;
-- [ ] Improve gdx;
-- [ ] Upload to Godot's Asset Library;
-- [ ] Port to GDNative as a native plugin;
-

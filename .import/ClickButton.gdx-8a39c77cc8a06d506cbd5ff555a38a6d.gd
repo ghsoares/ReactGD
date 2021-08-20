@@ -1,3 +1,6 @@
+# This is a .gdx file, gdx supports
+# custom markdown language made for this addon
+
 # Don't forget to extend from 'ReactComponent'!
 extends ReactComponent
 
@@ -89,27 +92,4 @@ func render():
 	# the difference is that it enables this custom language in the script
 	# that will be parsed to a more ugly, verbose dictionary variant
 	# (open the script on editor to see the parsed version)
-	return @(
-		# Like on HTML, you use tags with Godot's classes or
-		# custom classes
-		<Button
-			# Use props to set the variables of the node
-
-			# Sets the node name
-			name: "ClickButton"
-
-			# Dynamically assign the text, wrapping with parentheses
-			text: ("You clicked " + str(click_count) + " times!")
-
-			# When you prefix a prop with 'signal', you are telling
-			# that you want to connect the signal
-			signal pressed: on_button_click
-
-			# Define the theme of the button
-			theme: (theme.click_button)
-
-			# Pass a variable name to 'ref' when you want to keep track
-			# the reference of the rendered node
-			ref: "idk"
-		></Button>
-	)
+	return [{"props":{"name":"ClickButton", "text":("You clicked " + str(click_count) + " times!")}, "ref":"click_button", "signals":{"pressed":"on_button_click"}, "theme":(theme.click_button), "type":Button}]

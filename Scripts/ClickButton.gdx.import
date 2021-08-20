@@ -1,0 +1,13 @@
+[remap]
+
+importer="ReactGD.GDXScript"
+type="GDScript"
+path="res://.import/ClickButton.gdx-8a39c77cc8a06d506cbd5ff555a38a6d.gd"
+
+[deps]
+
+source_file="res://Scripts/ClickButton.gdx"
+dest_files=[ "res://.import/ClickButton.gdx-8a39c77cc8a06d506cbd5ff555a38a6d.gd" ]
+
+[params]
+
