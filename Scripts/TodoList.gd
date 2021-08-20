@@ -176,8 +176,9 @@ class Task:
 	
 	func on_task_remove() -> void:
 		emit_signal("task_remove", task_id)
+	
 	"""
-	func render() -> Dictionary:
+	func render() -> Array:
 		return {
 			[HBoxContainer, "HBox"]: {
 				"children": {
@@ -230,6 +231,7 @@ class Task:
 			}
 		}
 	"""
+	
 	static func get_base(): return PanelContainer
 
 var theming := {

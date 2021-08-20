@@ -32,7 +32,7 @@ func _process(delta) -> void:
 	var new_render_state := render()
 	var diff = DictionaryMethods.compute_diff(_render_state, new_render_state)
 	
-	#_iterate_tree(self, self, diff)
+	_iterate_tree(self, self, diff)
 	
 	_render_state = new_render_state
 	_dirty = false
@@ -40,51 +40,74 @@ func _process(delta) -> void:
 	var elapsed = OS.get_ticks_msec() - start
 	print("(" + name + ")" + " Render: ", elapsed, " ms")
 
+func _change_node_type(node: Node, to_type) -> Node:
+	var parent = node.get_parent()
+	var idx = node.get_index()
+	
+	parent.remove_child(node)
+	node.call_deferred("free")
+	
+	if to_type.new().get_class() == "ReactComponent":
+		node = to_type.get_base().new()
+		node.script = to_type
+	else:
+		node = to_type.new()
+	
+	parent.add_child(node)
+	parent.move_child(node, idx)
+	
+	return node
+
 func _iterate_tree(
-	parent: Node, prev_component: Node, data: Dictionary
+	parent: Node, prev_component: Node, nodes: Array
 ) -> void:
-	for k in data.keys():
-		var script = k[0]
-		var node_name = k[1]
-		var script_type = script.new().get_class()
-		
-		var change_type: int = data[k].change_type
-		var node_data :Dictionary = data[k].value
-		var children :Dictionary = node_data.get("children", {}).get("value", {})
+	var num_nodes := nodes.size()
+	
+	var i := 0
+	
+	while i < num_nodes:
+		var node_change_type: int = nodes[i].change_type
+		var node_data: Dictionary = nodes[i].value
 		
 		var ref: String = node_data.get("ref", {}).get("value", "")
 		
 		var node :Node = parent
 		
-		if change_type == 0:
-			if script_type == "ReactComponent":
-				node = script.get_base().new()
-				node.script = script
+		if node_change_type == 0:
+			var type = node_data.type
+			if type.value.new().get_class() == "ReactComponent":
+				node = type.value.get_base().new()
+				node.script = type.value
 			else:
-				node = script.new()
-			
-			node.name = node_name
+				node = type.value.new()
 			
 			parent.add_child(node)
 			_update_node(node, prev_component, node_data)
 			
 			if ref != "":
 				prev_component.set(ref, node)
-		elif change_type == 1:
-			node = parent.get_node(node_name)
+		elif node_change_type == 1:
+			node = parent.get_child(i)
 			node.queue_free()
+			
+			num_nodes -= 1
 			continue
 		else:
-			node = parent.get_node(node_name)
-			if node.get_class() == "ReactComponent":
-				node._dirty = true
+			node = parent.get_child(i)
+			var type = node_data.get("type", null)
+			if type && type.change_type == 2:
+				node = _change_node_type(node, type.value)
 			
 			_update_node(node, prev_component, node_data)
 			
 			if ref != "":
 				prev_component.set(ref, node)
 		
+		var children = node_data.get("children", {}).get("value", [])
+		
 		if !children.empty(): _iterate_tree(node, prev_component, children)
+		
+		i += 1
 
 func _update_node(node: Node, prev_component: Node, data: Dictionary) -> void:
 	var props :Dictionary = data.get("props", {}).get("value", {})
@@ -95,6 +118,8 @@ func _update_node(node: Node, prev_component: Node, data: Dictionary) -> void:
 		var prop_change_type = props[prop_name].change_type
 		if prop_change_type == 0 || prop_change_type == 2:
 			node.set(prop_name, prop_val)
+			if node.get_class() == "ReactComponent":
+				node._dirty = true
 	
 	for signal_name in signals:
 		var signal_val = signals[signal_name].value
