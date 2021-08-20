@@ -70,6 +70,7 @@ class InputField:
 		emit_signal("task_add", task_name)
 		input_field.text = ""
 	
+	"""
 	func render() -> Dictionary:
 		return {
 			[LineEdit, "InputField"]: {
@@ -97,7 +98,7 @@ class InputField:
 				"theme": theming.add_button
 			}
 		}
-	
+	"""
 	static func get_base(): return HBoxContainer
 
 class Task:
@@ -175,7 +176,7 @@ class Task:
 	
 	func on_task_remove() -> void:
 		emit_signal("task_remove", task_id)
-	
+	"""
 	func render() -> Dictionary:
 		return {
 			[HBoxContainer, "HBox"]: {
@@ -228,7 +229,7 @@ class Task:
 				}
 			}
 		}
-	
+	"""
 	static func get_base(): return PanelContainer
 
 var theming := {
@@ -301,6 +302,7 @@ func on_task_remove(task_id: int) -> void:
 		"tasks": tasks
 	})
 
+"""
 func render() -> Dictionary:
 	var tasks :Array= self.state.tasks
 	var tasks_children := {}
@@ -381,6 +383,6 @@ func render() -> Dictionary:
 			}
 		}
 	}
-
+"""
 
 

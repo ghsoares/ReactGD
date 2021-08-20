@@ -19,11 +19,24 @@ func on_button_click() -> void:
 	})
 
 # Render the component
-func render() -> Dictionary:
+func render() -> Array:
 	# Get the current state to render
 	var click_count :int = self.state.click_count
 	var color :Color = self.state.color
 	
+	return [
+		{
+			"type": Button,
+			"props": {
+				"name": "ClickButton",
+				"text": "You clicked " + str(click_count) + " times!"
+			},
+			"signals": {
+				"pressed": "on_button_click"
+			}
+		}
+	]
+	"""
 	return {
 		# To add a node, pass the class and the name
 		[Button, "ClickButton"]: {
@@ -87,4 +100,5 @@ func render() -> Dictionary:
 			}
 		}
 	}
+	"""
 

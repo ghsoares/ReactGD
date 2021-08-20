@@ -2,7 +2,16 @@ extends ReactComponent
 
 func render():
 	return @(
-		<Button text="something">
-			<Label text="anotherthing"/>
-		</Button text="otherthing">
+		<Button text:"something">
+			<Label text: "anotherthing"/>
+			<Button
+				text: "aaaaa"
+				node: something as Node2D
+				a_dict: {}
+				a_array: []
+				signal pressed: on_button_pressed
+			/>
+			<RichTextLabel/>
+			<Control></Control>
+		</Button>
 	)

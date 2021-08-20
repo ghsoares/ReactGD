@@ -3,7 +3,7 @@ extends Node
 class_name ReactComponent
 
 var _dirty: bool
-var _render_state: Dictionary
+var _render_state: Array
 var state: Dictionary
 
 func _enter_tree() -> void:
@@ -13,7 +13,7 @@ func _enter_tree() -> void:
 	
 	_dirty = true
 	state = {}
-	_render_state = {}
+	_render_state = []
 	construct()
 
 func set_state(new_state: Dictionary) -> void:
@@ -22,17 +22,17 @@ func set_state(new_state: Dictionary) -> void:
 
 func construct() -> void: pass
 
-func render() -> Dictionary:
-	return {}
+func render() -> Array:
+	return []
 
 func _process(delta) -> void:
 	if !_dirty: return
 	var start = OS.get_ticks_msec()
 	
 	var new_render_state := render()
-	var diff := DictionaryMethods.compute_diff(_render_state, new_render_state)
+	var diff = DictionaryMethods.compute_diff(_render_state, new_render_state)
 	
-	_iterate_tree(self, self, diff)
+	#_iterate_tree(self, self, diff)
 	
 	_render_state = new_render_state
 	_dirty = false
