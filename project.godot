@@ -27,7 +27,7 @@ _global_script_classes=[ {
 "base": "Control",
 "class": "ReactUI",
 "language": "GDScript",
-"path": "res://addons/ReactGD/Classes/ReactTree.gd"
+"path": "res://addons/ReactGD/Classes/ReactUI.gd"
 } ]
 _global_script_class_icons={
 "ReactComponent": "",
