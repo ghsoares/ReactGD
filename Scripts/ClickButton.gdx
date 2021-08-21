@@ -84,6 +84,12 @@ func render():
 		}
 	}
 
+	var children := []
+	if click_count > 0:
+		children += @(
+			<Label text: "You clicked at least one time" />
+		)
+
 	# Here you are returning the rendering,
 	# if you are using .gdx extension, you can use the markdown
 	# language like on ReactJS, remember to prefix with '@' and wrap
@@ -98,21 +104,27 @@ func render():
 		<Button
 			# Use props to set the variables of the node
 
+			# size_flags_horizontal: Control.SIZE_SHRINK_CENTER
+			# size_flags_vertical: Control.SIZE_SHRINK_CENTER
+
 			# Sets the node name
-			name: "ClickButton"
+			# name: "ClickButton"
 
 			# Dynamically assign the text, wrapping with parentheses
-			text: ("You clicked " + str(click_count) + " times!")
+			# text: ("You clicked " + str(click_count) + " times!")
 
 			# When you prefix a prop with 'signal', you are telling
 			# that you want to connect the signal
 			signal pressed: on_button_click
 
 			# Define the theme of the button
-			theme: (theme.click_button)
+			# theme: (theme.click_button)
 
 			# Pass a variable name to 'ref' when you want to keep track
 			# the reference of the rendered node
-			ref: "click_button"
-		></Button>
+			ref: click_button
+
+			children: children
+		>
+		</Button>
 	)

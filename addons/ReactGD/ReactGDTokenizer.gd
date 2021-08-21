@@ -6,7 +6,8 @@ enum PROP_TYPE {
 	Prop = 0,
 	Signal = 1,
 	Ref = 2,
-	Theming = 3
+	Theming = 3,
+	Children = 4
 }
 
 class Tokenizer:
@@ -83,7 +84,7 @@ static func split_layered(s: String, split_char: String, layer_open_chars: Strin
 
 static func parse_tags(code: String) -> Array:
 	var tokenizer := Tokenizer.new()
-	tokenizer.add_token("symbol", "\\w+")
+	tokenizer.add_token("symbol", "[\\w.]+")
 	tokenizer.add_token("tag_start_open", "<")
 	tokenizer.add_token("tag_end_open", "</")
 	tokenizer.add_token("tag_close", ">")
@@ -163,7 +164,7 @@ static func parse_tag(tag: Dictionary) -> Dictionary:
 	elif tag_type == "tag_end":
 		tag_code = tag_code.substr(2, tag_code.length() - 3)
 	
-	tokenizer.add_token("symbol", "\\w+")
+	tokenizer.add_token("symbol", "[\\w.]+")
 	tokenizer.add_token("prop_assign", ":")
 	tokenizer.add_token("integer", "\\d+")
 	tokenizer.add_token("integer", "0x[0-9a-g]+")
@@ -203,6 +204,8 @@ static func parse_tag(tag: Dictionary) -> Dictionary:
 				prop_type = PROP_TYPE.Theming
 			elif prop_name == "ref":
 				prop_type = PROP_TYPE.Ref
+			elif prop_name == "children":
+				prop_type = PROP_TYPE.Children
 		elif (i + 2) < num_tokens && tokens[i].name == "symbol" && tokens[i + 1].name == "symbol" && tokens[i + 2].name == "prop_assign":
 			is_prop = true
 			match tokens[i].match.get_string():
@@ -211,37 +214,9 @@ static func parse_tag(tag: Dictionary) -> Dictionary:
 			prop_value = tokens[i + 3]
 		
 		if is_prop:
-			var skip = i + 1
+			var skip = i + 3
 			
 			match prop_type:
-				PROP_TYPE.Prop, PROP_TYPE.Theming, PROP_TYPE.Ref:
-					match prop_value.name:
-						"array_open":
-							var end = find_literal_close(i + 2, tokens, "array_open", "array_close")
-							if end != -1:
-								prop_value = tag_code.substr(
-									prop_value.match.get_start(), tokens[end].match.get_end() -
-									prop_value.match.get_start()
-								)
-								skip = end + 1
-						"dict_open":
-							var end = find_literal_close(i + 2, tokens, "dict_open", "dict_close")
-							if end != -1:
-								prop_value = tag_code.substr(
-									prop_value.match.get_start(), tokens[end].match.get_end() -
-									prop_value.match.get_start()
-								)
-								skip = end + 1
-						"par_open":
-							var end = find_literal_close(i + 2, tokens, "par_open", "par_close")
-							if end != -1:
-								prop_value = tag_code.substr(
-									prop_value.match.get_start(), tokens[end].match.get_end() -
-									prop_value.match.get_start()
-								)
-								skip = end + 1
-						_:
-							prop_value = prop_value.match.get_string()
 				PROP_TYPE.Signal:
 					match prop_value.name:
 						"symbol":
@@ -272,6 +247,38 @@ static func parse_tag(tag: Dictionary) -> Dictionary:
 										})
 								
 								skip = end + 1
+				PROP_TYPE.Ref:
+					match prop_value.name:
+						"symbol":
+							prop_value = "\"" + prop_value.match.get_string() + "\""
+						_: prop_value = prop_value.match.get_string()
+				_:
+					match prop_value.name:
+						"array_open":
+							var end = find_literal_close(i + 2, tokens, "array_open", "array_close")
+							if end != -1:
+								prop_value = tag_code.substr(
+									prop_value.match.get_start(), tokens[end].match.get_end() -
+									prop_value.match.get_start()
+								)
+								skip = end + 1
+						"dict_open":
+							var end = find_literal_close(i + 2, tokens, "dict_open", "dict_close")
+							if end != -1:
+								prop_value = tag_code.substr(
+									prop_value.match.get_start(), tokens[end].match.get_end() -
+									prop_value.match.get_start()
+								)
+								skip = end + 1
+						"par_open":
+							var end = find_literal_close(i + 2, tokens, "par_open", "par_close")
+							if end != -1:
+								prop_value = tag_code.substr(
+									prop_value.match.get_start(), tokens[end].match.get_end() -
+									prop_value.match.get_start()
+								)
+								skip = end + 1
+						_: prop_value = prop_value.match.get_string()
 			
 			props.append({
 				"name": prop_name,
@@ -319,6 +326,7 @@ static func build_tree(tags: Array) -> Array:
 		var node_props := {}
 		var node_signals := {}
 		var node_children := []
+		var secondary_children := ""
 		var node_theme := ""
 		var node_ref := ""
 		var skipped := false
@@ -334,6 +342,8 @@ static func build_tree(tags: Array) -> Array:
 					node_theme = prop.value
 				elif prop.type == PROP_TYPE.Ref:
 					node_ref = prop.value
+				elif prop.type == PROP_TYPE.Children:
+					secondary_children = prop.value
 			found = true
 		
 		if tag_type == "tag_start":
@@ -345,18 +355,19 @@ static func build_tree(tags: Array) -> Array:
 					i = close_i + 1
 					skipped = true
 		
-		#print(node_props)
-		
 		if found:
 			var node := {
 				'"type"': tag_class,
 			}
+			
 			if !node_props.empty():
 				node['"props"'] = node_props
 			if !node_signals.empty():
 				node['"signals"'] = node_signals
 			if !node_children.empty():
 				node['"children"'] = node_children
+			if secondary_children != "":
+				node['"secondary_children"']  = secondary_children
 			if node_theme != "":
 				node['"theme"'] = node_theme
 			if node_ref != "":
@@ -381,7 +392,6 @@ static func gdx(code: String) -> String:
 		tags[i] = parse_tag(tags[i])
 	
 	var tree = build_tree(tags)
-	#print(str(tree))
 	
 	return str(tree)
 
@@ -412,6 +422,8 @@ static func parse(original: String) -> String:
 			var swap_code := gdx(original_code)
 			
 			original = original.replace(original_code, swap_code)
+			
+			parsed = true
 		
 		if !parsed: break
 	

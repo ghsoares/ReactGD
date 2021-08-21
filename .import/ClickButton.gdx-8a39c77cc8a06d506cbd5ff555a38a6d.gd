@@ -84,6 +84,10 @@ func render():
 		}
 	}
 
+	var children := []
+	if click_count > 0:
+		children += [{"props":{"text":"You clicked at least one time"}, "type":Label}]
+
 	# Here you are returning the rendering,
 	# if you are using .gdx extension, you can use the markdown
 	# language like on ReactJS, remember to prefix with '@' and wrap
@@ -92,4 +96,4 @@ func render():
 	# the difference is that it enables this custom language in the script
 	# that will be parsed to a more ugly, verbose dictionary variant
 	# (open the script on editor to see the parsed version)
-	return [{"props":{"name":"ClickButton", "text":("You clicked " + str(click_count) + " times!")}, "ref":"click_button", "signals":{"pressed":"on_button_click"}, "theme":(theme.click_button), "type":Button}]
+	return [{"ref":"click_button", "secondary_children":children, "signals":{"pressed":"on_button_click"}, "type":Button}]

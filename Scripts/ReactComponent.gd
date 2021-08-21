@@ -32,9 +32,10 @@ func _process(delta) -> void:
 	var new_render_state := render()
 	var diff = DictionaryMethods.compute_diff(_render_state, new_render_state)
 	
-	_iterate_tree(self, self, diff)
+	if !diff.empty():
+		_iterate_tree(self, self, diff)
+		_render_state = new_render_state
 	
-	_render_state = new_render_state
 	_dirty = false
 	
 	var elapsed = OS.get_ticks_msec() - start
@@ -66,10 +67,16 @@ func _iterate_tree(
 	var i := 0
 	
 	while i < num_nodes:
+		if nodes[i].empty():
+			i += 1
+			continue
+		
 		var node_change_type: int = nodes[i].change_type
 		var node_data: Dictionary = nodes[i].value
 		
-		var ref: String = node_data.get("ref", {}).get("value", "")
+		var ref: Dictionary = node_data.get("ref", {})
+		var ref_name: String = ref.get("value", "")
+		var ref_change: int = ref.get("change_type", -1)
 		
 		var node :Node = parent
 		
@@ -83,29 +90,25 @@ func _iterate_tree(
 			
 			parent.add_child(node)
 			_update_node(node, prev_component, node_data)
-			
-			print(ref)
-			
-			if ref != "":
-				prev_component.set(ref, node)
 		elif node_change_type == 1:
 			node = parent.get_child(i)
 			node.queue_free()
 			
-			num_nodes -= 1
+			i += 1
 			continue
-		else:
+		elif node_change_type == 2:
 			node = parent.get_child(i)
 			var type = node_data.get("type", null)
 			if type && type.change_type == 2:
 				node = _change_node_type(node, type.value)
 			
 			_update_node(node, prev_component, node_data)
-			
-			if ref != "":
-				prev_component.set(ref, node)
+		
+		if ref_name != "" && ref_change == 2 || ref_change == 0:
+			prev_component.set(ref_name, node)
 		
 		var children = node_data.get("children", {}).get("value", [])
+		children = node_data.get("secondary_children", {}).get("value", []) + children
 		
 		if !children.empty(): _iterate_tree(node, prev_component, children)
 		

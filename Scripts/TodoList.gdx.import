@@ -1,0 +1,13 @@
+[remap]
+
+importer="ReactGD.GDXScript"
+type="GDScript"
+path="res://.import/TodoList.gdx-876e6d10ee1dc2d6b99027dbf0dea285.gd"
+
+[deps]
+
+source_file="res://Scripts/TodoList.gdx"
+dest_files=[ "res://.import/TodoList.gdx-876e6d10ee1dc2d6b99027dbf0dea285.gd" ]
+
+[params]
+
