@@ -301,11 +301,14 @@ searches for a templates that starts with "(<..." and end with ">)..." or "/>...
 meaning that there are a GDX block, and replaces with gdscript variant
 """
 func parse(code: String) -> String:
+	# Removes all comments from file
+	var comment_reg := RegEx.new()
+	comment_reg.compile("#.*")
+	code = comment_reg.sub(code, " ", true)
+	
 	var tokenizer := Tokenizer.new()
 	# Any kind of symbol accessor, like self, self.foo, something, etc.
 	tokenizer.add_token("symbol", "[\\w.]+")
-	# Comment line, is ignored by the parser
-	tokenizer.add_token("comment", "#.*")
 	# Single line strings like "a string"
 	tokenizer.add_token("string", "\"[^\"]+\"")
 	# Multiple line strings like
