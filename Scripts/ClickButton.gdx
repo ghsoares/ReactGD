@@ -84,12 +84,6 @@ func render():
 		}
 	}
 
-	var children := []
-	if click_count > 0:
-		children += @(
-			<Label text: "You clicked at least one time" />
-		)
-
 	# Here you are returning the rendering,
 	# if you are using .gdx extension, you can use the markdown
 	# language like on ReactJS, remember to prefix with '@' and wrap
@@ -123,8 +117,6 @@ func render():
 			# Pass a variable name to 'ref' when you want to keep track
 			# the reference of the rendered node
 			ref: click_button
-
-			children: children
 		>
 		</Button>
 	)

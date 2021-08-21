@@ -3,7 +3,7 @@ extends Node
 class_name ReactComponent
 
 var _dirty: bool
-var _render_state: Array
+var _render_state: Dictionary
 var state: Dictionary
 
 func _enter_tree() -> void:
@@ -13,7 +13,7 @@ func _enter_tree() -> void:
 	
 	_dirty = true
 	state = {}
-	_render_state = []
+	_render_state = {}
 	construct()
 
 func set_state(new_state: Dictionary) -> void:
@@ -22,15 +22,17 @@ func set_state(new_state: Dictionary) -> void:
 
 func construct() -> void: pass
 
-func render() -> Array:
-	return []
+func render() -> Dictionary:
+	return {}
 
 func _process(delta) -> void:
 	if !_dirty: return
 	var start = OS.get_ticks_msec()
 	
 	var new_render_state := render()
-	var diff = DictionaryMethods.compute_diff(_render_state, new_render_state)
+	var diff := DictionaryMethods.compute_diff(_render_state, new_render_state)
+	
+	#print(JSON.print(new_render_state, "  "))
 	
 	if !diff.empty():
 		_iterate_tree(self, self, diff)
@@ -60,19 +62,18 @@ func _change_node_type(node: Node, to_type) -> Node:
 	return node
 
 func _iterate_tree(
-	parent: Node, prev_component: Node, nodes: Array
+	parent: Node, prev_component: Node, nodes: Dictionary
 ) -> void:
 	var num_nodes := nodes.size()
 	
 	var i := 0
+	var keys := nodes.keys()
 	
 	while i < num_nodes:
-		if nodes[i].empty():
-			i += 1
-			continue
+		var n = keys[i]
 		
-		var node_change_type: int = nodes[i].change_type
-		var node_data: Dictionary = nodes[i].value
+		var node_change_type: int = nodes[n].change_type
+		var node_data: Dictionary = nodes[n].value
 		
 		var ref: Dictionary = node_data.get("ref", {})
 		var ref_name: String = ref.get("value", "")
@@ -91,13 +92,13 @@ func _iterate_tree(
 			parent.add_child(node)
 			_update_node(node, prev_component, node_data)
 		elif node_change_type == 1:
-			node = parent.get_child(i)
+			node = parent.get_child(n)
 			node.queue_free()
 			
 			i += 1
 			continue
 		elif node_change_type == 2:
-			node = parent.get_child(i)
+			node = parent.get_child(n)
 			var type = node_data.get("type", null)
 			if type && type.change_type == 2:
 				node = _change_node_type(node, type.value)
@@ -107,9 +108,10 @@ func _iterate_tree(
 		if ref_name != "" && ref_change == 2 || ref_change == 0:
 			prev_component.set(ref_name, node)
 		
-		var children = node_data.get("children", {}).get("value", [])
-		children = node_data.get("secondary_children", {}).get("value", []) + children
+		var children = node_data.get("children", {}).get("value", {})
+		var secondary_children = node_data.get("secondary_children", {}).get("value", {})
 		
+		if !secondary_children.empty(): _iterate_tree(node, prev_component, secondary_children)
 		if !children.empty(): _iterate_tree(node, prev_component, children)
 		
 		i += 1
@@ -136,24 +138,30 @@ func _update_node(node: Node, prev_component: Node, data: Dictionary) -> void:
 			var flags = signal_val.get("flags", {}).get("value", 0)
 			
 			if signal_change_type == 0:
-				node.connect(signal_name, prev_component, target, binds, flags)
+				if node.has_signal(signal_name):
+					node.connect(signal_name, prev_component, target, binds, flags)
 			elif signal_change_type == 1:
-				node.disconnect(signal_name, prev_component, target)
+				if node.has_signal(signal_name):
+					node.disconnect(signal_name, prev_component, target)
 			else:
 				var prev_target = signal_val.target.prev_value
-				node.disconnect(signal_name, prev_component, prev_target)
-				node.connect(signal_name, prev_component, target, binds, flags)
+				if node.has_signal(signal_name):
+					node.disconnect(signal_name, prev_component, prev_target)
+					node.connect(signal_name, prev_component, target, binds, flags)
 		elif signal_val is String:
 			var target = signal_val
 			
 			if signal_change_type == 0:
-				node.connect(signal_name, prev_component, target)
+				if node.has_signal(signal_name):
+					node.connect(signal_name, prev_component, target)
 			elif signal_change_type == 1:
-				node.disconnect(signal_name, prev_component, target)
+				if node.has_signal(signal_name):
+					node.disconnect(signal_name, prev_component, target)
 			else:
 				var prev_target = signals[signal_name].prev_value
-				node.disconnect(signal_name, prev_component, prev_target)
-				node.connect(signal_name, prev_component, target)
+				if node.is_connected(signal_name, prev_component, prev_target):
+					node.disconnect(signal_name, prev_component, prev_target)
+					node.connect(signal_name, prev_component, target)
 	
 	if node is Control:
 		_update_theme(node, data.get("theme", {}).get("value", {}))

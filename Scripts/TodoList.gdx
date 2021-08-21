@@ -281,8 +281,8 @@ func on_task_remove(task_id: int) -> void:
 	})
 
 func render():
-	var tasks :Array= self.state.tasks
-	var tasks_children := []
+	var tasks :Array = self.state.tasks
+	var tasks_children := {}
 	
 	if tasks.empty():
 		tasks_children = @(
@@ -298,7 +298,7 @@ func render():
 	else:
 		for i in range(tasks.size()):
 			var task = tasks[i]
-			tasks_children += @(
+			tasks_children[i] = @(
 				<Task
 					name: ("task_" + str(i))
 					task_id: i,
@@ -307,7 +307,7 @@ func render():
 					signal task_done_toggle: on_task_done_toggle
 					signal task_remove: on_task_remove
 				/>
-			)
+			)[0]
 	
 	return @(
 		<VBoxContainer>

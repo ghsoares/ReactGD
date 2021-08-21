@@ -311,8 +311,8 @@ static func find_close_tag(tags: Array, i: int, tag_class: String) -> int:
 	
 	return -1
 
-static func build_tree(tags: Array) -> Array:
-	var tree := []
+static func build_tree(tags: Array) -> Dictionary:
+	var tree := {}
 	
 	var i := 0
 	var num_tags := tags.size()
@@ -325,7 +325,7 @@ static func build_tree(tags: Array) -> Array:
 		
 		var node_props := {}
 		var node_signals := {}
-		var node_children := []
+		var node_children := {}
 		var secondary_children := ""
 		var node_theme := ""
 		var node_ref := ""
@@ -351,7 +351,7 @@ static func build_tree(tags: Array) -> Array:
 			if close_i != -1:
 				var between = tags.slice(i + 1, close_i - 1)
 				if !between.empty():
-					node_children += build_tree(between)
+					node_children = build_tree(between)
 					i = close_i + 1
 					skipped = true
 		
@@ -373,7 +373,7 @@ static func build_tree(tags: Array) -> Array:
 			if node_ref != "":
 				node['"ref"'] = node_ref
 			
-			tree.append(node)
+			tree[tree.size()] = node
 		
 		if !skipped: i += 1
 	
