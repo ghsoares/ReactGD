@@ -8,34 +8,6 @@
 
 config_version=4
 
-_global_script_classes=[ {
-"base": "Node",
-"class": "DictionaryMethods",
-"language": "GDScript",
-"path": "res://Scripts/DictionaryMethods.gd"
-}, {
-"base": "Node",
-"class": "ReactComponent",
-"language": "GDScript",
-"path": "res://Scripts/ReactComponent.gd"
-}, {
-"base": "Node",
-"class": "ReactGDTokenizer",
-"language": "GDScript",
-"path": "res://addons/ReactGD/ReactGDTokenizer.gd"
-}, {
-"base": "Node",
-"class": "StringMethods",
-"language": "GDScript",
-"path": "res://Scripts/StringMethods.gd"
-} ]
-_global_script_class_icons={
-"DictionaryMethods": "",
-"ReactComponent": "",
-"ReactGDTokenizer": "",
-"StringMethods": ""
-}
-
 [application]
 
 config/name="ReactGD"
