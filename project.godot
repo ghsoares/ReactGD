@@ -8,10 +8,37 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Node",
+"class": "ReactComponent",
+"language": "GDScript",
+"path": "res://addons/ReactGD/Classes/ReactComponent.gd"
+}, {
+"base": "Node",
+"class": "ReactGDDictionaryMethods",
+"language": "GDScript",
+"path": "res://addons/ReactGD/Utility/ReactGDDictionaryMethods.gd"
+}, {
+"base": "Node",
+"class": "ReactGDTokenizer",
+"language": "GDScript",
+"path": "res://addons/ReactGD/ReactGDTokenizer.gd"
+}, {
+"base": "Control",
+"class": "ReactTree",
+"language": "GDScript",
+"path": "res://addons/ReactGD/Classes/ReactTree.gd"
+} ]
+_global_script_class_icons={
+"ReactComponent": "",
+"ReactGDDictionaryMethods": "",
+"ReactGDTokenizer": "",
+"ReactTree": ""
+}
+
 [application]
 
 config/name="ReactGD"
-run/main_scene="res://Demo Scenes/TodoList.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]
