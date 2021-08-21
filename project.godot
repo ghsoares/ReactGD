@@ -20,20 +20,20 @@ _global_script_classes=[ {
 "path": "res://addons/ReactGD/Utility/ReactGDDictionaryMethods.gd"
 }, {
 "base": "Node",
-"class": "ReactGDTokenizer",
+"class": "ReactGDXParser",
 "language": "GDScript",
-"path": "res://addons/ReactGD/ReactGDTokenizer.gd"
+"path": "res://addons/ReactGD/ReactGDXParser.gd"
 }, {
 "base": "Control",
-"class": "ReactTree",
+"class": "ReactUI",
 "language": "GDScript",
 "path": "res://addons/ReactGD/Classes/ReactTree.gd"
 } ]
 _global_script_class_icons={
 "ReactComponent": "",
 "ReactGDDictionaryMethods": "",
-"ReactGDTokenizer": "",
-"ReactTree": ""
+"ReactGDXParser": "",
+"ReactUI": ""
 }
 
 [application]

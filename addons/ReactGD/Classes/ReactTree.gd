@@ -1,6 +1,6 @@
 extends Control
 
-class_name ReactTree
+class_name ReactUI
 
 var _render_state: Dictionary
 var _dirty: bool
@@ -47,9 +47,6 @@ func _build_tree(render_state, id: String) -> Dictionary:
 	var type = render_state.type
 	var children :Array = render_state.get("children", [])
 	var props :Dictionary = render_state.get("props", {})
-	var signals :Dictionary = render_state.get("signals", {})
-	var theme :Dictionary = render_state.get("theme", {})
-	var ref :String = render_state.get("ref", "")
 	var node := {}
 	
 	if self._cached_nodes.has(id):
@@ -64,10 +61,10 @@ func _build_tree(render_state, id: String) -> Dictionary:
 			"type": type,
 			"instance": instance,
 			"children": {},
-			"props": props,
-			"signals": signals,
-			"theme": theme,
-			"ref": ref,
+			"props": {},
+			"signals": {},
+			"theme": {},
+			"ref": "",
 		}
 		self._cached_nodes[id] = node
 	else:
@@ -76,18 +73,28 @@ func _build_tree(render_state, id: String) -> Dictionary:
 			"type": type,
 			"instance": type.new(),
 			"children": {},
-			"props": props,
-			"signals": signals,
-			"theme": theme,
-			"ref": ref,
+			"props": {},
+			"signals": {},
+			"theme": {},
+			"ref": "",
 		}
 		if node.instance.get_class() == "ReactComponent":
 			node.instance.construct()
 		self._cached_nodes[id] = node
 	
-	node["props"] = props
+	node.props = props
+	for p_name in props.keys():
+		if p_name == "ref":
+			node.ref = props[p_name]
+		elif p_name == "theme":
+			node.theme = props[p_name]
+		elif p_name.begins_with("on_"):
+			var signal_name :String = p_name.substr(3, p_name.length() - 3)
+			if node.instance.has_signal(signal_name):
+				node.signals[signal_name] = props[p_name]
 	
 	if node.instance.get_class() == "ReactComponent":
+		node.instance.id = id
 		node.instance.tree = self
 		node.instance.props = props
 		children.append(node.instance.render())
@@ -127,6 +134,9 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_i
 	
 	if signals.change_type == 0 || signals.change_type == 1:
 		_update_signals(root_component, instance.value, signals.value)
+	
+	if theme.change_type == 0 || theme.change_type == 1:
+		_update_theme(instance.value, theme.value)
 	
 	if children.change_type == 0 || children.change_type == 1:
 		var off = 0
@@ -175,6 +185,147 @@ func _update_signals(target_component: Node, node: Node, signals: Dictionary) ->
 		elif sig.change_type == 2:
 			var prev_target_name = sig.value[0]
 			node.disconnect(signal_name, target_component, prev_target_name)
+
+func _update_theme(node: Node, theme: Dictionary) -> void:
+	var styles :Dictionary = theme.get("styles", {}).get("value", {})
+	var colors :Dictionary = theme.get("colors", {}).get("value", {})
+	var constants :Dictionary = theme.get("constants", {}).get("value", {})
+	var fonts :Dictionary = theme.get("fonts", {}).get("value", {})
+	var icons :Dictionary = theme.get("icons", {}).get("value", {})
+	
+	_update_styles(node, styles)
+	_update_colors(node, colors)
+	_update_constants(node, constants)
+	_update_fonts(node, fonts)
+	_update_icons(node, icons)
+
+func _update_styles(node: Control, styles: Dictionary) -> void:
+	for b in styles:
+		var style_name :String = b[0]
+		var change_type = styles[b].change_type
+		var style_obj :StyleBox = null
+		
+		if change_type == 0:
+			style_obj = b[1].new()
+			node.add_stylebox_override(style_name, style_obj)
+		elif change_type == 1:
+			node.add_stylebox_override(style_name, null)
+			continue
+		else:
+			style_obj = node.get_stylebox(style_name)
+		
+		for prop in styles[b].value:
+			var prop_val = styles[b].value[prop].value
+			match prop:
+				"border_width":
+					style_obj.set("border_width_left", prop_val)
+					style_obj.set("border_width_right", prop_val)
+					style_obj.set("border_width_top", prop_val)
+					style_obj.set("border_width_bottom", prop_val)
+				"border_width_horizontal":
+					style_obj.set("border_width_left", prop_val)
+					style_obj.set("border_width_right", prop_val)
+				"border_width_vertical":
+					style_obj.set("border_width_top", prop_val)
+					style_obj.set("border_width_bottom", prop_val)
+				"corner_radius":
+					style_obj.set("corner_radius_top_left", prop_val)
+					style_obj.set("corner_radius_top_right", prop_val)
+					style_obj.set("corner_radius_bottom_left", prop_val)
+					style_obj.set("corner_radius_bottom_right", prop_val)
+				"expand_margin":
+					style_obj.set("expand_margin_left", prop_val)
+					style_obj.set("expand_margin_right", prop_val)
+					style_obj.set("expand_margin_top", prop_val)
+					style_obj.set("expand_margin_bottom", prop_val)
+				"expand_margin_horizontal":
+					style_obj.set("expand_margin_left", prop_val)
+					style_obj.set("expand_margin_right", prop_val)
+				"expand_margin_vertical":
+					style_obj.set("expand_margin_top", prop_val)
+					style_obj.set("expand_margin_bottom", prop_val)
+				"content_margin":
+					style_obj.set("content_margin_left", prop_val)
+					style_obj.set("content_margin_right", prop_val)
+					style_obj.set("content_margin_top", prop_val)
+					style_obj.set("content_margin_bottom", prop_val)
+				"content_margin_horizontal":
+					style_obj.set("content_margin_left", prop_val)
+					style_obj.set("content_margin_right", prop_val)
+				"content_margin_vertical":
+					style_obj.set("content_margin_top", prop_val)
+					style_obj.set("content_margin_bottom", prop_val)
+				_:
+					style_obj.set(prop, prop_val)
+
+func _update_colors(node: Control, colors: Dictionary) -> void:
+	for c in colors:
+		var change_type = colors[c].change_type
+		var value: Color = Color.black
+		
+		if change_type == 0:
+			value = colors[c].value
+		elif change_type == 1:
+			var default = ClassDB.instance(node.get_class()).get_color(c)
+			node.add_color_override(c, default)
+			continue
+		else:
+			value = colors[c].value
+		
+		node.add_color_override(c, value)
+
+func _update_constants(node: Control, constants: Dictionary) -> void:
+	for c in constants:
+		var change_type = constants[c].change_type
+		var value :int = 0
+		
+		if change_type == 0:
+			value = constants[c].value
+		elif change_type == 1:
+			node.add_constant_override(c, 0)
+			continue
+		else:
+			value = constants[c].value
+		
+		node.add_constant_override(c, value)
+
+func _update_fonts(node: Control, fonts: Dictionary) -> void:
+	for f in fonts:
+		var change_type = fonts[f].change_type
+		var value :DynamicFont = null
+		
+		if change_type == 0:
+			value = DynamicFont.new()
+			node.add_font_override(f, value)
+		elif change_type == 1:
+			node.add_font_override(f, null)
+			continue
+		else:
+			value = node.get_font(f)
+		
+		for prop in fonts[f].value:
+			var prop_val = fonts[f].value[prop].value
+			if prop == "src":
+				prop_val = ResourceLoader.load(prop_val)
+				value.font_data = prop_val
+				continue
+			
+			value.set(prop, prop_val)
+
+func _update_icons(node: Control, icons: Dictionary) -> void:
+	for i in icons:
+		var change_type = icons[i].change_type
+		var value :Texture = null
+		
+		if change_type == 0:
+			value = icons[i].value
+		elif change_type == 1:
+			node.add_icon_override(i, null)
+			continue
+		else:
+			value = icons[i].value
+		
+		node.add_icon_override(i, value)
 
 func get_class() -> String: return "ReactTree"
 

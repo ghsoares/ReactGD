@@ -2,6 +2,7 @@ extends Node
 
 class_name ReactComponent
 
+var id: String
 var state: Dictionary
 var props: Dictionary
 var tree

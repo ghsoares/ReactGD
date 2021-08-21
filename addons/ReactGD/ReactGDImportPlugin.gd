@@ -30,9 +30,20 @@ func import(source_file: String, save_path: String, options, platform_variants, 
 	var script := GDScript.new()
 	var source = file.get_as_text()
 	
-	source = ReactGDTokenizer.parse(source)
+	var parser := ReactGDXParser.new()
+	
+	source = parser.parse(source)
 	script.source_code = source
 	
 	var filename := save_path + "." + get_save_extension()
 	return ResourceSaver.save(filename, script)
+
+
+
+
+
+
+
+
+
 

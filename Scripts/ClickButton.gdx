@@ -1,0 +1,137 @@
+extends ReactUI
+
+class ClickButton:
+	extends ReactComponent
+	
+	signal remove(id)
+	
+	const theme := {
+		"add_btn": {
+			"styles": {
+				["normal", StyleBoxFlat]: {
+					"corner_radius": 16.0,
+					"bg_color": Color(0.215686, 0.905882, 0.6)
+				},
+				["pressed", StyleBoxFlat]: {
+					"corner_radius": 16.0,
+					"bg_color": Color(0.215686, 0.905882, 0.6)
+				},
+				["hover", StyleBoxFlat]: {
+					"corner_radius": 16.0,
+					"bg_color": Color(0.215686, 0.905882, 0.6)
+				}
+			},
+			"colors": {
+				"font_color": Color(0,0,0),
+				"font_color_hover": Color(0,0,0),
+				"font_color_pressed": Color(0,0,0)
+			}
+		},
+		"rem_btn": {
+			"styles": {
+				["normal", StyleBoxFlat]: {
+					"corner_radius": 16.0,
+					"bg_color": Color(0.905882, 0.215686, 0.356863)
+				},
+				["pressed", StyleBoxFlat]: {
+					"corner_radius": 16.0,
+					"bg_color": Color(0.905882, 0.215686, 0.356863)
+				},
+				["hover", StyleBoxFlat]: {
+					"corner_radius": 16.0,
+					"bg_color": Color(0.905882, 0.215686, 0.356863)
+				}
+			},
+			"colors": {
+				"font_color": Color(0,0,0),
+				"font_color_hover": Color(0,0,0),
+				"font_color_pressed": Color(0,0,0)
+			}
+		}
+	}
+	
+	func construct() -> void:
+		.construct()
+		self.state = {
+			"count": 0
+		}
+	
+	func on_add_btn_pressed() -> void:
+		set_state({
+			"count": self.state.count + 1
+		})
+	
+	func on_remove_btn_pressed() -> void:
+		emit_signal("remove", self.props.btn_id)
+	
+	func render() -> Dictionary:
+		return (
+			<HBoxContainer
+				size_flags_horizontal: Control.SIZE_EXPAND_FILL
+			>
+				<Label
+					text: (str(self.props.btn_id))
+				/>
+				<Button
+					size_flags_horizontal: Control.SIZE_EXPAND_FILL
+					text: ("You clicked " + str(self.state.count) + " times!")
+					on_pressed: ["on_add_btn_pressed", [], 0]
+					theme: theme.add_btn
+				/>
+				<Button
+					size_flags_horizontal: Control.SIZE_EXPAND_FILL
+					text: ("Remove")
+					on_pressed: ["on_remove_btn_pressed", [], 0]
+					theme: theme.rem_btn
+				/>
+			</HBoxContainer>
+		)
+
+func construct() -> void:
+	.construct()
+	self.state = {
+		"click_count": 0,
+		"click_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+	}
+
+func on_button_pressed() -> void:
+	set_state({
+		"click_count": self.state.click_count + 1
+	})
+
+func on_click_remove(id: int) -> void:
+	var click_ids: Array = self.state.click_ids
+	click_ids.erase(id)
+	set_state({
+		"click_ids": click_ids
+	})
+
+func render() -> Dictionary:
+	var click_count: int = self.state.click_count
+	
+	var children := []
+	
+	for i in self.state.click_ids:
+		children.append((
+			<ClickButton
+				btn_id: i
+				key: i
+				name: ("click_button_" + str(i))
+				on_remove: ["on_click_remove", [], 0]
+			/>
+		))
+	
+	return (
+		<VBoxContainer
+			anchor_left: 0
+			anchor_top: 0
+			anchor_right: 1
+			anchor_bottom: 1
+			children: children
+		/>
+	)
+
+
+
+
+
