@@ -91,7 +91,15 @@ func _build_tree(render_state, id: String) -> Dictionary:
 		elif p_name.begins_with("on_"):
 			var signal_name :String = p_name.substr(3, p_name.length() - 3)
 			if node.instance.has_signal(signal_name):
-				node.signals[signal_name] = props[p_name]
+				var signal_value = props[p_name]
+				if signal_value is String:
+					signal_value = [signal_value, [], 0]
+				elif signal_value is Array:
+					if signal_value.size() == 1:
+						signal_value += [[], 0]
+					elif signal_value.size() == 2:
+						signal_value += [0]
+				node.signals[signal_name] = signal_value
 	
 	if node.instance.get_class() == "ReactComponent":
 		node.instance.id = id
@@ -121,6 +129,8 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_i
 	if instance.change_type == 0:
 		parent.add_child(instance.value)
 		parent.move_child(instance.value, child_idx)
+		if ref.value != "":
+			root_component.set(ref.value, instance.value)
 	elif instance.change_type == 2:
 		parent.remove_child(instance.value)
 		if c_type == "ReactComponent":
@@ -128,6 +138,9 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_i
 				var first = children.value.keys()[0]
 				var child = children.value[first].value.instance
 				parent.remove_child(child.value)
+		if ref.value != "":
+			root_component.set(ref.value, null)
+			return
 	
 	if props.change_type == 0 || props.change_type == 1:
 		_update_props(instance.value, props.value)
@@ -187,17 +200,28 @@ func _update_signals(target_component: Node, node: Node, signals: Dictionary) ->
 			node.disconnect(signal_name, target_component, prev_target_name)
 
 func _update_theme(node: Node, theme: Dictionary) -> void:
-	var styles :Dictionary = theme.get("styles", {}).get("value", {})
-	var colors :Dictionary = theme.get("colors", {}).get("value", {})
-	var constants :Dictionary = theme.get("constants", {}).get("value", {})
-	var fonts :Dictionary = theme.get("fonts", {}).get("value", {})
-	var icons :Dictionary = theme.get("icons", {}).get("value", {})
+	var styles :Dictionary = theme.get("styles", {})
+	var colors :Dictionary = theme.get("colors", {})
+	var constants :Dictionary = theme.get("constants", {})
+	var fonts :Dictionary = theme.get("fonts", {})
+	var icons :Dictionary = theme.get("icons", {})
 	
-	_update_styles(node, styles)
-	_update_colors(node, colors)
-	_update_constants(node, constants)
-	_update_fonts(node, fonts)
-	_update_icons(node, icons)
+	var styles_change_type: int = styles.get("change_type", -1)
+	var colors_change_type: int = colors.get("change_type", -1)
+	var constants_change_type: int = constants.get("change_type", -1)
+	var fonts_change_type: int = fonts.get("change_type", -1)
+	var icons_change_type: int = icons.get("change_type", -1)
+	
+	if styles_change_type == 0 || styles_change_type == 1:
+		_update_styles(node, styles.get("value", {}))
+	if colors_change_type == 0 || colors_change_type == 1:
+		_update_colors(node, colors.get("value", {}))
+	if constants_change_type == 0 || constants_change_type == 1:
+		_update_constants(node, constants.get("value", {}))
+	if fonts_change_type == 0 || fonts_change_type == 1:
+		_update_fonts(node, fonts.get("value", {}))
+	if icons_change_type == 0 || icons_change_type == 1:
+		_update_icons(node, icons.get("value", {}))
 
 func _update_styles(node: Control, styles: Dictionary) -> void:
 	for b in styles:
@@ -208,7 +232,7 @@ func _update_styles(node: Control, styles: Dictionary) -> void:
 		if change_type == 0:
 			style_obj = b[1].new()
 			node.add_stylebox_override(style_name, style_obj)
-		elif change_type == 1:
+		elif change_type == 2:
 			node.add_stylebox_override(style_name, null)
 			continue
 		else:
@@ -265,7 +289,7 @@ func _update_colors(node: Control, colors: Dictionary) -> void:
 		
 		if change_type == 0:
 			value = colors[c].value
-		elif change_type == 1:
+		elif change_type == 2:
 			var default = ClassDB.instance(node.get_class()).get_color(c)
 			node.add_color_override(c, default)
 			continue
