@@ -148,6 +148,8 @@ All the demos can be found in [Demo Scenes](Demo%20Scenes)
 - [ ] Turn into a addon;
 - [ ] Add documentation;
 - [ ] Improve gdx;
+- [ ] Add functional based rendering (and hooks);
+- [ ] Add a easy way to create prop transitions (with tweens);
 - [ ] Upload to Godot's Asset Library;
-- [ ] Port to GDNative as a native plugin;
+- [ ] Port to GDNative as a native plugin.
 
