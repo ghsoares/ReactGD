@@ -314,16 +314,16 @@ meaning that there are a GDX block, and replaces with gdscript variant
 func parse(code: String) -> String:
 	var tokenizer := Tokenizer.new()
 	# Any kind of symbol accessor, like self, self.foo, something, etc.
-	tokenizer.add_token("symbol", "[\\w.]+")
+	tokenizer.add_token("symbol", "[\\w\\.]+")
 	# Comment line
 	tokenizer.add_token("comment", "#.*")
 	tokenizer.add_ignore_token("comment")
 	# Single line strings like "a string"
-	tokenizer.add_token("string", "\"[^\"]+\"")
+	tokenizer.add_token("string", "\"[^\"]*\"")
 	# Multiple line strings like
 	# """A text
 	# about apples"""
-	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]+\"\"\"")
+	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]*\"\"\"")
 	tokenizer.add_token("tag_open", "<")
 	tokenizer.add_token("tag_close", ">")
 	# Open parentheses
@@ -340,33 +340,16 @@ func parse(code: String) -> String:
 		var j := -1
 		
 		while i < num_tokens:
-			"""
 			if tokens[i].name == "par_open":
 				if tokens[i + 1].name == "tag_open":
 					j = i
 					i += 1
-			elif tokens[i].name == "tag_close" || tokens[i].name == "tag_close":
+			elif tokens[i].name == "tag_close":
 				if tokens[i + 1].name == "par_close" && j != -1:
 					var substr = code.substr(
 						tokens[j].match.get_start(),
 						tokens[i + 1].match.get_end() - tokens[j].match.get_start()
 					)
-					var new_code = _parse_gdx(substr)
-					code = code.replace(substr, new_code)
-					parsed = true
-					break
-			"""
-			if tokens[i].name == "par_open":
-				if tokens[i + 1].name == "tag_open":
-					j = i
-					i += 1
-			elif tokens[i].name == "tag_close" || tokens[i].name == "tag_close":
-				if tokens[i + 1].name == "par_close" && j != -1:
-					var substr = code.substr(
-						tokens[j].match.get_start(),
-						tokens[i + 1].match.get_end() - tokens[j].match.get_start()
-					)
-					print(substr)
 					var new_code = _parse_gdx(substr)
 					code = code.replace(substr, new_code)
 					parsed = true
