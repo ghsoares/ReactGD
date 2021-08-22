@@ -179,6 +179,8 @@ func _update_props(node: Node, props: Dictionary) -> void:
 		var prop = props[prop_name]
 		if prop.change_type != 3:
 			node.set(prop_name, prop.value)
+			if node is LineEdit && prop_name == "text":
+				node.caret_position = prop.value.length()
 
 func _update_signals(target_component: Node, node: Node, signals: Dictionary) -> void:
 	for signal_name in signals.keys():

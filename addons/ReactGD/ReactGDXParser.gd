@@ -285,6 +285,11 @@ it parses the tags step by step:
 	-Build the hierarchy.
 """
 func _parse_gdx(code: String) -> String:
+	# Removes all comments from code
+	var comment_reg := RegEx.new()
+	comment_reg.compile("#.*")
+	code = comment_reg.sub(code, " ", true)
+	
 	var tags := _extract_tags(code)
 	
 	for i in range(tags.size()):
@@ -301,14 +306,11 @@ searches for a templates that starts with "(<..." and end with ">)..." or "/>...
 meaning that there are a GDX block, and replaces with gdscript variant
 """
 func parse(code: String) -> String:
-	# Removes all comments from file
-	var comment_reg := RegEx.new()
-	comment_reg.compile("#.*")
-	code = comment_reg.sub(code, " ", true)
-	
 	var tokenizer := Tokenizer.new()
 	# Any kind of symbol accessor, like self, self.foo, something, etc.
 	tokenizer.add_token("symbol", "[\\w.]+")
+	# Comment line
+	tokenizer.add_token("comment", "#.*")
 	# Single line strings like "a string"
 	tokenizer.add_token("string", "\"[^\"]+\"")
 	# Multiple line strings like
@@ -332,14 +334,33 @@ func parse(code: String) -> String:
 		
 		while i < num_tokens:
 			if tokens[i].name == "par_open":
-				if tokens[i + 1].name == "tag_open":
+				var k := i + 1
+				var found := false
+				while k < num_tokens:
+					if tokens[k].name == "tag_open":
+						found = true
+						break
+					k += 1
+				if found:
 					j = i
-					i += 1
+					i = k - 1
 			elif tokens[i].name == "tag_close" || tokens[i].name == "tag_close":
-				if tokens[i + 1].name == "par_close" && j != -1:
+				var k := i + 1
+				var found := false
+				var count := 1
+				while k < num_tokens:
+					if tokens[k].name == "par_open":
+						count += 1
+					if tokens[k].name == "par_close":
+						count -= 1
+						if count == 0:
+							found = true
+							break
+					k += 1
+				if found && j != -1:
 					var substr = code.substr(
 						tokens[j].match.get_start(),
-						tokens[i + 1].match.get_end() - tokens[j].match.get_start()
+						tokens[k].match.get_end() - tokens[j].match.get_start()
 					)
 					var new_code = _parse_gdx(substr)
 					code = code.replace(substr, new_code)

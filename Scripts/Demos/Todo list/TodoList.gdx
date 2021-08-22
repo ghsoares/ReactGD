@@ -1,0 +1,154 @@
+extends ReactUI
+
+const font_jetbrains_regular := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
+const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold.ttf"
+const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
+const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
+
+const style := {
+	"title1": {
+		"fonts": {
+			"font": {
+				"size": 24.0,
+				"use_filter": true,
+				"src": font_jetbrains_extrabold
+			}
+		}
+	},
+	"title2": {
+		"fonts": {
+			"font": {
+				"size": 20.0,
+				"use_filter": true,
+				"src": font_jetbrains_bold
+			}
+		}
+	},
+	"task_frame": {
+		"styles": {
+			["panel", StyleBoxFlat]: {
+				"bg_color": Color(0.141176, 0.121569, 0.2),
+				"corner_radius": 8.0,
+				"content_margin": 8.0
+			}
+		},
+	},
+	"empty_list": {
+		"fonts": {
+			"font": {
+				"size": 32.0,
+				"use_filter": true,
+				"src": font_jetbrains_extrabold
+			}
+		}
+	}
+}
+
+func construct() -> void:
+	self.state = {
+		"tasks": []
+	}
+
+func on_task_add(task_name: String) -> void:
+	self.set_state({
+		"tasks": self.state.tasks + [{
+			"name": task_name,
+			"done": false
+		}]
+	})
+
+func on_task_done_toggle(task_id: int, val: bool) -> void:
+	var tasks: Array = self.state.tasks
+
+	tasks[task_id].done = val
+
+	self.set_state({"tasks": tasks})
+
+func on_task_remove(task_id: int) -> void:
+	var tasks :Array = self.state.tasks
+	
+	tasks.remove(task_id)
+	
+	self.set_state({
+		"tasks": tasks
+	})
+
+func render():
+	var tasks: Array = self.state.tasks
+	var children := []
+
+	if tasks.empty():
+		children[0] = (
+			<Label
+				name: "nothing_to_render"
+				text: "Nothing to do right now..."
+				size_flags_vertical: Control.SIZE_EXPAND_FILL
+				align: Label.ALIGN_CENTER
+				valign: Label.VALIGN_CENTER
+				theme: style.empty_list
+			/>
+		)
+	else:
+		for i in range(tasks.size()):
+			var task = tasks[i]
+			#children[i] = (
+			#	<Task
+			#		key: i
+			#		name: ("task_" + str(i))
+			#		task_id: i,
+			#		task_name: task.name
+			#		task_done: task.done
+			#		on_task_done_toggle: "on_task_done_toggle"
+			#		on_task_remove: "on_task_remove"
+			#	/>
+			#)
+	
+	return (
+		<VBoxContainer
+			size_flags_horizontal: Control.SIZE_EXPAND_FILL
+			size_flags_vertical: Control.SIZE_EXPAND_FILL
+		>
+			<Label
+				name: "Title1"
+				text: "Todo list"
+				theme: style.title1
+			/>
+			<Control rect_min_size: (Vector2(0, 16))/>
+			<Label
+				name: "Title2"
+				text: "New task"
+				theme: style.title2
+			/>
+			#<InputField
+			#	name: "InputField"
+			#	signal task_add: on_task_add
+			#/>
+			<Control rect_min_size: (Vector2(0, 16))/>
+			<ScrollContainer
+				name: "Scroll"
+				horizontal_enabled: false,
+				size_flags_vertical: Control.SIZE_EXPAND_FILL
+			>
+				<VBoxContainer
+					name: "ScrollVBox"
+					size_flags_horizontal: Control.SIZE_EXPAND_FILL
+					size_flags_vertical: Control.SIZE_EXPAND_FILL
+					children: children
+				/>
+			</ScrollContainer>
+		</VBoxContainer>
+	)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
