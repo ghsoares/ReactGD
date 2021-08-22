@@ -5,6 +5,7 @@ class_name ReactComponent
 var id: String
 var state: Dictionary
 var props: Dictionary
+var parent_component
 var tree
 
 func set_state(new_state: Dictionary) -> void:

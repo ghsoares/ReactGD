@@ -150,9 +150,6 @@ func render():
 				# Dynamically assign the text, wrapping with parentheses
 				text: ("You clicked " + str(click_count) + " times!")
 
-				# You can hide/unhide dynamically
-				visible: (click_count % 2 == 0)
-
 				theme: theme.click_count_label
 			/>
 		</VBoxContainer>

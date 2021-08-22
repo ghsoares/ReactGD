@@ -27,13 +27,16 @@ func render() -> Dictionary:
 	return {}
 
 func _process(delta) -> void:
+	render_process(delta)
+
+func render_process(delta) -> void:
 	if !_dirty: return
 	_dirty = false
 	
 	var start = OS.get_ticks_msec()
 	
 	var new_render_state := render()
-	new_render_state = _build_tree(new_render_state, "")
+	new_render_state = _build_tree(self, new_render_state, "")
 	var tree_diff = ReactGDDictionaryMethods.compute_diff(_render_state, new_render_state)
 	
 	_iterate_tree(self, self, tree_diff, 0)
@@ -42,11 +45,11 @@ func _process(delta) -> void:
 	var elapsed = OS.get_ticks_msec() - start
 	print("(" + name + ")" + " Render: ", elapsed, " ms")
 
-func _build_tree(render_state, id: String) -> Dictionary:
+func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> Dictionary:
 	id = id + render_state.id
 	var type = render_state.type
-	var children :Array = render_state.get("children", [])
 	var props :Dictionary = render_state.get("props", {})
+	var children :Array = props.get("children", [])
 	var node := {}
 	
 	if self._cached_nodes.has(id):
@@ -105,12 +108,14 @@ func _build_tree(render_state, id: String) -> Dictionary:
 		node.instance.id = id
 		node.instance.tree = self
 		node.instance.props = props
-		children.append(node.instance.render())
+		node.instance.parent_component = prev_component
+		children = [node.instance.render()]
+		prev_component = node.instance
 	
 	if children.size() > 0:
 		node.children = {}
 		for i in range(children.size()):
-			var c = self._build_tree(children[i], id + "." )
+			var c = self._build_tree(prev_component, children[i], id + "." )
 			var c_id = c.id
 			node.children[c_id] = c
 	
@@ -356,9 +361,7 @@ func _update_icons(node: Control, icons: Dictionary) -> void:
 		
 		node.add_icon_override(i, value)
 
-func get_class() -> String: return "ReactTree"
-
-
+func get_class() -> String: return "ReactUI"
 
 
 

@@ -183,6 +183,7 @@ func _build_hierarchy(tags: Array) -> Array:
 	
 	while i < num_tags:
 		var props_key: String = tags[i].props.get("key", "")
+		var props := {}
 		if tags[i].type != "end":
 			var type: String = tags[i].class_type
 			
@@ -191,18 +192,10 @@ func _build_hierarchy(tags: Array) -> Array:
 			if props_key != "":
 				curr_node['"id"'] += " + str(" + props_key + ")"
 			
-			var props := {}
-			
 			for prop_name in tags[i].props.keys():
-				if prop_name == "id": continue
-				if prop_name == "key": continue
-				if prop_name == "children": continue
 				props['"' + prop_name + '"'] = tags[i].props[prop_name]
 			
 			curr_node['"props"'] = props
-		
-		if tags[i].props.has("children"):
-			curr_node['"children"'] = tags[i].props.children
 		
 		if tags[i].type == "start":
 			var type: String = tags[i].class_type
@@ -212,7 +205,7 @@ func _build_hierarchy(tags: Array) -> Array:
 			var between := tags.slice(i + 1, j - 1)
 			var children := _build_hierarchy(between)
 			
-			curr_node['"children"'] = children
+			props['"children"'] = children
 			
 			i = j
 		
