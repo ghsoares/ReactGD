@@ -2,22 +2,17 @@ extends Node
 
 class_name ReactGDXParser
 
-enum PROP_TYPE {
-	Prop = 0,
-	Signal = 1,
-	Ref = 2,
-	Theming = 3,
-	Children = 4
-}
-
 class Tokenizer:
-	var tokens := {}
+	var tokens := []
 	var ignore_tokens := []
 	
 	func add_token(token_name: String, token: String) -> void:
 		var t := RegEx.new()
 		t.compile(token)
-		tokens[token_name] = t
+		tokens.append({
+			"name": token_name,
+			"regex": t
+		})
 	
 	func add_ignore_token(token_name: String) -> void:
 		ignore_tokens.append(token_name)
@@ -34,17 +29,17 @@ class Tokenizer:
 			var best_match_start :int = s_len
 			
 			for t in tokens:
-				var token_match :RegExMatch = tokens[t].search(s, i)
+				var token_match :RegExMatch = t.regex.search(s, i)
 				if !token_match: continue
 				
 				if !best_match:
-					best_match_name = t
+					best_match_name = t.name
 					best_match = token_match
 					best_match_start = token_match.get_start()
 				else:
 					var match_start = token_match.get_start()
 					if match_start <= best_match_start:
-						best_match_name = t
+						best_match_name = t.name
 						best_match = token_match
 						best_match_start = match_start
 			
@@ -176,11 +171,10 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 	var tokenizer := Tokenizer.new()
 	tokenizer.add_token("symbol", "[\\w.]+")
 	tokenizer.add_token("prop_assign", ":")
-	tokenizer.add_token("integer", "\\d+")
-	tokenizer.add_token("integer", "0x[0-9a-g]+")
-	tokenizer.add_token("integer", "0b[0-1]+")
-	tokenizer.add_token("float", "\\d+.\\d+")
-	tokenizer.add_token("float", "\\d+.\\d+e[+-]?\\d+")
+	
+	tokenizer.add_token("integer", "[+-]?\\d+")
+	tokenizer.add_token("float", "[+-]?\\d*\\.\\d+")
+	
 	tokenizer.add_token("string", "\"[^\"]+\"")
 	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]+\"\"\"")
 	tokenizer.add_token("node_path", "\\@\"[^\"]+\"")

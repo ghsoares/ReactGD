@@ -22,7 +22,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "ReactGDXParser",
 "language": "GDScript",
-"path": "res://addons/ReactGD/ReactGDXParser.gd"
+"path": "res://addons/ReactGD/Utility/ReactGDXParser.gd"
 }, {
 "base": "Control",
 "class": "ReactUI",
