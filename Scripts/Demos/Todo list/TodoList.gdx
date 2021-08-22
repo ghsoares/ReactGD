@@ -6,6 +6,15 @@ const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Lig
 const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
 
 const style := {
+	"container": {
+		"styles": {
+			["panel", StyleBoxFlat]: {
+				"bg_color": Color(0.101961, 0.086275, 0.141176),
+				"corner_radius": 8.0,
+				"content_margin": 32.0
+			}
+		}
+	},
 	"title1": {
 		"fonts": {
 			"font": {
@@ -24,15 +33,6 @@ const style := {
 			}
 		}
 	},
-	"task_frame": {
-		"styles": {
-			["panel", StyleBoxFlat]: {
-				"bg_color": Color(0.141176, 0.121569, 0.2),
-				"corner_radius": 8.0,
-				"content_margin": 8.0
-			}
-		},
-	},
 	"empty_list": {
 		"fonts": {
 			"font": {
@@ -43,6 +43,9 @@ const style := {
 		}
 	}
 }
+
+onready var InputField = load("res://Scripts/Demos/Todo list/TodoListInputField.gdx")
+onready var Task = load("res://Scripts/Demos/Todo list/TodoListTask.gdx")
 
 func construct() -> void:
 	self.state = {
@@ -78,7 +81,7 @@ func render():
 	var children := []
 
 	if tasks.empty():
-		children[0] = (
+		children = [(
 			<Label
 				name: "nothing_to_render"
 				text: "Nothing to do right now..."
@@ -87,56 +90,70 @@ func render():
 				valign: Label.VALIGN_CENTER
 				theme: style.empty_list
 			/>
-		)
+		)]
 	else:
 		for i in range(tasks.size()):
 			var task = tasks[i]
-			#children[i] = (
-			#	<Task
-			#		key: i
-			#		name: ("task_" + str(i))
-			#		task_id: i,
-			#		task_name: task.name
-			#		task_done: task.done
-			#		on_task_done_toggle: "on_task_done_toggle"
-			#		on_task_remove: "on_task_remove"
-			#	/>
-			#)
+			children.append((
+				<Task
+					key: i
+					name: ("task_" + str(i))
+					task_id: i,
+					task_name: task.name
+					task_done: task.done
+					on_task_done_toggle: "on_task_done_toggle"
+					on_task_remove: "on_task_remove"
+				/>
+			))
 	
 	return (
-		<VBoxContainer
-			size_flags_horizontal: Control.SIZE_EXPAND_FILL
-			size_flags_vertical: Control.SIZE_EXPAND_FILL
+		<PanelContainer
+			anchor_left: 0
+			anchor_top: 0
+			anchor_right: 1
+			anchor_bottom: 1
+
+			margin_left: 16.0
+			margin_top: 16.0
+			margin_bottom: -16.0
+			margin_right: -16.0
+
+			theme: style.container
 		>
-			<Label
-				name: "Title1"
-				text: "Todo list"
-				theme: style.title1
-			/>
-			<Control rect_min_size: (Vector2(0, 16))/>
-			<Label
-				name: "Title2"
-				text: "New task"
-				theme: style.title2
-			/>
-			#<InputField
-			#	name: "InputField"
-			#	signal task_add: on_task_add
-			#/>
-			<Control rect_min_size: (Vector2(0, 16))/>
-			<ScrollContainer
-				name: "Scroll"
-				horizontal_enabled: false,
+			<VBoxContainer
+				size_flags_horizontal: Control.SIZE_EXPAND_FILL
 				size_flags_vertical: Control.SIZE_EXPAND_FILL
 			>
-				<VBoxContainer
-					name: "ScrollVBox"
-					size_flags_horizontal: Control.SIZE_EXPAND_FILL
-					size_flags_vertical: Control.SIZE_EXPAND_FILL
-					children: children
+				<Label
+					name: "Title1"
+					text: "Todo list"
+					theme: style.title1
 				/>
-			</ScrollContainer>
-		</VBoxContainer>
+				<Control rect_min_size: (Vector2(0, 16))/>
+				<Label
+					name: "Title2"
+					text: "New task"
+					theme: style.title2
+				/>
+				<InputField
+					name: "InputField"
+					on_task_add: "on_task_add"
+				/>
+				<Control rect_min_size: (Vector2(0, 16))/>
+				<ScrollContainer
+					name: "Scroll"
+					horizontal_enabled: false,
+					size_flags_vertical: Control.SIZE_EXPAND_FILL
+				>
+					<VBoxContainer
+						name: "ScrollVBox"
+						size_flags_horizontal: Control.SIZE_EXPAND_FILL
+						size_flags_vertical: Control.SIZE_EXPAND_FILL
+						children: children
+					/>
+				</ScrollContainer>
+			</VBoxContainer>
+		</PanelContainer>
 	)
 
 
