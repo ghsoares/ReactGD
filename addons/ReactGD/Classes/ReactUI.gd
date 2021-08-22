@@ -52,10 +52,10 @@ func _build_tree(render_state, id: String) -> Dictionary:
 	if self._cached_nodes.has(id):
 		node = self._cached_nodes[id]
 		var instance = node.instance
-		if type != node.type:
-			instance = type.new()
-			if instance.get_class() == "ReactComponent":
-				instance.construct()
+		#if type != node.type:
+		#	instance = type.new()
+		#	if instance.get_class() == "ReactComponent":
+		#		instance.construct()
 		node = {
 			"id": id,
 			"type": type,
@@ -110,7 +110,7 @@ func _build_tree(render_state, id: String) -> Dictionary:
 	if children.size() > 0:
 		node.children = {}
 		for i in range(children.size()):
-			var c = self._build_tree(children[i], id + "_" )
+			var c = self._build_tree(children[i], id + "." )
 			var c_id = c.id
 			node.children[c_id] = c
 	
