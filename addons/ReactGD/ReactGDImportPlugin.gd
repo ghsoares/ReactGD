@@ -1,6 +1,8 @@
 tool
 extends EditorImportPlugin
 
+enum Presets { DEFAULT }
+
 func get_importer_name() -> String:
 	return "ReactGD.GDXScript"
 
@@ -16,11 +18,29 @@ func get_save_extension() -> String:
 func get_resource_type() -> String:
 	return "GDScript"
 
-func get_import_options(preset: int) -> Array:
-	return []
-
 func get_preset_count() -> int:
-	return 0
+	return Presets.size()
+
+func get_preset_name(preset: int) -> String:
+	match preset:
+		Presets.DEFAULT:
+			return "Default"
+		_:
+			return "Unknown"
+
+func get_import_options(preset: int) -> Array:
+	match preset:
+		Presets.DEFAULT:
+			return [{
+				"name": "unfold_blocks",
+				"default_value": false,
+				"hint_string": "Tells if the result gdx blocks should be unfolded in folded"
+			}]
+		_:
+			return []
+
+func get_option_visibility(option: String, options: Dictionary) -> bool:
+	return true
 
 func import(source_file: String, save_path: String, options, platform_variants, gen_files):
 	var file := File.new()
@@ -31,8 +51,10 @@ func import(source_file: String, save_path: String, options, platform_variants, 
 	var source = file.get_as_text()
 	
 	var parser := ReactGDXParser.new()
+	parser.unfold_blocks = options.unfold_blocks
 	
 	source = parser.parse(source)
+	
 	script.source_code = source
 	
 	var filename := save_path + "." + get_save_extension()
