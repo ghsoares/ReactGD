@@ -133,14 +133,17 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_i
 			root_component.set(ref.value, instance.value)
 	elif instance.change_type == 2:
 		parent.remove_child(instance.value)
-		if c_type == "ReactComponent":
-			if !children.value.empty():
-				var first = children.value.keys()[0]
-				var child = children.value[first].value.instance
-				parent.remove_child(child.value)
+		_cached_nodes.erase(id.value)
+		if !children.value.empty():
+			for c_id in children.value.keys():
+				var c :Dictionary = children.value[c_id]
+				if c_type == "ReactComponent":
+					_iterate_tree(instance.value, parent, c.value, 0)
+				else:
+					_iterate_tree(root_component, instance.value, c.value, 0)
 		if ref.value != "":
 			root_component.set(ref.value, null)
-			return
+		return
 	
 	if props.change_type == 0 || props.change_type == 1:
 		_update_props(instance.value, props.value)
