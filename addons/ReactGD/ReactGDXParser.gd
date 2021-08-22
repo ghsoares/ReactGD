@@ -12,11 +12,15 @@ enum PROP_TYPE {
 
 class Tokenizer:
 	var tokens := {}
+	var ignore_tokens := []
 	
 	func add_token(token_name: String, token: String) -> void:
 		var t := RegEx.new()
 		t.compile(token)
 		tokens[token_name] = t
+	
+	func add_ignore_token(token_name: String) -> void:
+		ignore_tokens.append(token_name)
 	
 	func tokenize(s: String) -> Array:
 		var res := []
@@ -46,10 +50,12 @@ class Tokenizer:
 			
 			if !best_match: break
 			
-			res.append({
-				"name": best_match_name,
-				"match": best_match
-			})
+			if not best_match_name in ignore_tokens:
+				res.append({
+					"name": best_match_name,
+					"match": best_match
+				})
+			
 			i = best_match.get_end()
 		
 		return res
@@ -311,6 +317,7 @@ func parse(code: String) -> String:
 	tokenizer.add_token("symbol", "[\\w.]+")
 	# Comment line
 	tokenizer.add_token("comment", "#.*")
+	tokenizer.add_ignore_token("comment")
 	# Single line strings like "a string"
 	tokenizer.add_token("string", "\"[^\"]+\"")
 	# Multiple line strings like
@@ -333,35 +340,33 @@ func parse(code: String) -> String:
 		var j := -1
 		
 		while i < num_tokens:
+			"""
 			if tokens[i].name == "par_open":
-				var k := i + 1
-				var found := false
-				while k < num_tokens:
-					if tokens[k].name == "tag_open":
-						found = true
-						break
-					k += 1
-				if found:
+				if tokens[i + 1].name == "tag_open":
 					j = i
-					i = k - 1
+					i += 1
 			elif tokens[i].name == "tag_close" || tokens[i].name == "tag_close":
-				var k := i + 1
-				var found := false
-				var count := 1
-				while k < num_tokens:
-					if tokens[k].name == "par_open":
-						count += 1
-					if tokens[k].name == "par_close":
-						count -= 1
-						if count == 0:
-							found = true
-							break
-					k += 1
-				if found && j != -1:
+				if tokens[i + 1].name == "par_close" && j != -1:
 					var substr = code.substr(
 						tokens[j].match.get_start(),
-						tokens[k].match.get_end() - tokens[j].match.get_start()
+						tokens[i + 1].match.get_end() - tokens[j].match.get_start()
 					)
+					var new_code = _parse_gdx(substr)
+					code = code.replace(substr, new_code)
+					parsed = true
+					break
+			"""
+			if tokens[i].name == "par_open":
+				if tokens[i + 1].name == "tag_open":
+					j = i
+					i += 1
+			elif tokens[i].name == "tag_close" || tokens[i].name == "tag_close":
+				if tokens[i + 1].name == "par_close" && j != -1:
+					var substr = code.substr(
+						tokens[j].match.get_start(),
+						tokens[i + 1].match.get_end() - tokens[j].match.get_start()
+					)
+					print(substr)
 					var new_code = _parse_gdx(substr)
 					code = code.replace(substr, new_code)
 					parsed = true
