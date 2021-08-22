@@ -116,14 +116,15 @@ func render():
 			/>
 		)]
 	else:
-		# Iterate the added tasks and assign a Task child,
-		# don't forget to set the `key` property, which
-		# is needed to properly get the correct cached node
-		# in the tree
+		# Iterate the added tasks and assign a Task child with
+		# the properties of the task
 		for i in range(tasks.size()):
 			var task = tasks[i]
 			children.append((
 				<Task
+					# When iterating and adding child components,
+					# don't forget to set the key property, to properly
+					# add the nodes in tree, else it will only show the last added
 					key: i
 					name: ("task_" + str(i))
 					task_id: i,
