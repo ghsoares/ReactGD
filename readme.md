@@ -13,8 +13,9 @@ There's a example script of a simple button that tells how much times the button
 # This is a .gdx file, gdx supports
 # custom markdown language made for this addon
 
-# Don't forget to extend from 'ReactComponent'!
-extends ReactComponent
+# To the first reactive element, extend from ReactUI,
+# then for the nested component extend from ReactComponent
+extends ReactUI
 
 # Path to a jetbrains mono font
 const font_path := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
@@ -43,6 +44,9 @@ func render():
 	# Get the current state to use to render the nodes
 	var click_count :int = self.state.click_count
 	var color :Color = self.state.color
+
+	# A quick and easy way to find a color perceived luminance 
+	var color_lum := color.r * .2126 + color.g * .7152 + color.b * .0722
 
 	# Temporary variable of all the returned node's themes
 	var theme := {
@@ -92,45 +96,78 @@ func render():
 					# only once when the path changes
 					"src": font_path
 				}
+			},
+			"colors": {
+				# Assign dynamically the font color
+				"font_color": Color.white if color_lum < .5 else Color.black,
+				"font_color_hover": Color.white if color_lum < .5 else Color.black,
+				"font_color_pressed": Color.white if color_lum < .5 else Color.black
+			}
+		},
+		"click_count_label": {
+			"colors": {
+				"font_color": Color.black
 			}
 		}
 	}
 
 	# Here you are returning the rendering,
 	# if you are using .gdx extension, you can use the markdown
-	# language like on ReactJS, remember to prefix with '@' and wrap
-	# around parentheses.
+	# language like on ReactJS, remember to wrap around parentheses
 	# This extension import .gdx files like a regular gdscript file,
 	# the difference is that it enables this custom language in the script
 	# that will be parsed to a more ugly, verbose dictionary variant
 	# (open the script on editor to see the parsed version)
-	return @(
+
+	# Don't worry, all the comments are completely ignored by the parser
+	return (
 		# Like on HTML, you use tags with Godot's classes or
 		# custom classes
-		<Button
-			# Use props to set the variables of the node
-
-			size_flags_horizontal: Control.SIZE_SHRINK_CENTER
-			size_flags_vertical: Control.SIZE_SHRINK_CENTER
-
-			# Sets the node name
-			name: "ClickButton"
-
-			# Dynamically assign the text, wrapping with parentheses
-			text: ("You clicked " + str(click_count) + " times!")
-
-			# When you prefix a prop with 'signal', you are telling
-			# that you want to connect the signal
-			signal pressed: on_button_click
-
-			# Define the theme of the button
-			theme: (theme.click_button)
-
-			# Pass a variable name to 'ref' when you want to keep track
-			# the reference of the rendered node
-			ref: click_button
+		<VBoxContainer
+			anchor_top: 0.0
+			anchor_left: 0.0
+			anchor_right: 1.0
+			anchor_bottom: 1.0
+			alignment: VBoxContainer.ALIGN_CENTER
 		>
-		</Button>
+			<Button
+				# Use props to set the variables of the node
+
+				# Size flags
+				size_flags_horizontal: Control.SIZE_SHRINK_CENTER
+				size_flags_vertical: Control.SIZE_SHRINK_CENTER
+
+				# Sets the node name
+				name: "ClickButton"
+
+				# Assign a static text
+				text: "Click me!"
+
+				# When you want to connect to a signal,
+				# preffix the name of the signal with 'on_',
+				# this tells the ReactTree
+				on_pressed: "on_button_click"
+
+				# Define the theme of the button
+				theme: theme.click_button
+
+				# Pass a variable name to 'ref' when you want to keep track
+				# the reference of the rendered node
+				ref: "click_button"
+			/>
+			<Label
+				size_flags_horizontal: Control.SIZE_SHRINK_CENTER
+				size_flags_vertical: Control.SIZE_SHRINK_CENTER
+			
+				# Dynamically assign the text, wrapping with parentheses
+				text: ("You clicked " + str(click_count) + " times!")
+
+				# You can hide/unhide dynamically
+				visible: (click_count % 2 == 0)
+
+				theme: theme.click_count_label
+			/>
+		</VBoxContainer>
 	)
 ```
 Here's the code in action:
