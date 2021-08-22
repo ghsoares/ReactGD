@@ -149,6 +149,7 @@ All the demos can be found in [Demo Scenes](Demo%20Scenes)
 - [ ] Add documentation;
 - [ ] Improve gdx;
 - [ ] Add functional based rendering (and hooks);
+- [ ] Create intellisense, as extension for Visual Studio Code;
 - [ ] Add a easy way to create prop transitions (with tweens);
 - [ ] Upload to Godot's Asset Library;
 - [ ] Port to GDNative as a native plugin.
