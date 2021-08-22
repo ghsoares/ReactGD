@@ -2,16 +2,14 @@ extends Node
 
 class_name ReactGDXParser
 
-var added_ids :Array
 var rng :RandomNumberGenerator
 var unfold_blocks: bool
 
 func _init() -> void:
-	added_ids = []
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
 
-func _random_id():
+func _random_id(added_ids: Array):
 	var random_chars := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_='
 	var num_chars := random_chars.length()
 	var length := 4
@@ -177,6 +175,7 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 
 func _build_hierarchy(tags: Array) -> Array:
 	var hierarchy := []
+	var added_ids := []
 	
 	var num_tags := tags.size()
 	var i := 0
@@ -188,7 +187,7 @@ func _build_hierarchy(tags: Array) -> Array:
 			var type: String = tags[i].class_type
 			
 			curr_node['"type"'] = type
-			curr_node['"id"'] = '"' + _random_id() + '"'
+			curr_node['"id"'] = '"' + _random_id(added_ids) + '"'
 			if props_key != "":
 				curr_node['"id"'] += " + str(" + props_key + ")"
 			
