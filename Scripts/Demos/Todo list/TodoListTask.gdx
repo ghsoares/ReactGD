@@ -1,13 +1,15 @@
+# This is the task component used by the todo list example,
+# extends from ReactComponent instead of ReactUI
 extends ReactComponent
 
+# Constant font paths by style
 const font_jetbrains_regular := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
 const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold.ttf"
 const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
 const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
 
-signal task_done_toggle(id, val)
-signal task_remove(id)
-
+# InputField styling, I won't comment much here because
+# the syntax will be changed
 var style := {
 	"task_frame": {
 		"styles": {
@@ -76,15 +78,25 @@ var style := {
 	}
 }
 
+# Custom signals
+signal task_done_toggle(id, val)
+signal task_remove(id)
+
+# Function called when CheckMark is toggled, emitting
+# the task_done_toggle signal followed by id and value
 func on_task_done_toggle(val: bool) -> void:
 	var task_id: int = self.props.get("task_id", 0)
 	emit_signal("task_done_toggle", task_id, val)
 
+# Function called when remove button is pressed, emitting
+# the task_remove signal followed by id
 func on_task_remove() -> void:
 	var task_id: int = self.props.get("task_id", 0)
 	emit_signal("task_remove", task_id)
 
+# Main render function
 func render():
+	# Grab id, name and done properties passed or defaults
 	var task_id: int = self.props.get("task_id", 0)
 	var task_name: String = self.props.get("task_name", "")
 	var task_done: bool = self.props.get("task_done", false)
@@ -96,6 +108,8 @@ func render():
 		>
 			<HBoxContainer>
 				<Label
+					# Remember to wrap with parentheses if you want to add a gdscript
+					# language code block to be executed on runtime
 					text: (str(task_id + 1))
 				/>
 				<Control

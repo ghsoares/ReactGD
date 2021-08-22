@@ -1,11 +1,15 @@
+# This is the input field component used by the todo list example,
+# extends from ReactComponent instead of ReactUI
 extends ReactComponent
 
-const fonts_path := "res://Fonts/JetBrains/fonts/ttf/"
+# Constant font paths by style
 const font_jetbrains_regular := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
 const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold.ttf"
 const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
 const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
 
+# InputField styling, I won't comment much here because
+# the syntax will be changed
 var style := {
 	"input_field": {
 		"styles": {
@@ -56,18 +60,26 @@ var style := {
 	}
 }
 
+# Custom signals
 signal task_add(task_name)
 
+# Simple component constructor
 func construct() -> void:
 	self.state = {
 		"task_name": ""
 	}
 
+# Signal called when the LineEdit's text changes,
+# setting the current inserted task name
 func on_task_name_changed(new_name: String) -> void:
 	set_state({
 		"task_name": new_name
 	})
 
+# Signal called when the add button is pressed,
+# emitting the custom signal and clears the current
+# inserted task name, ignore when current task name is
+# empty
 func on_add_button_pressed() -> void:
 	var task_name :String = self.state.task_name
 	if task_name == "": return
@@ -76,7 +88,9 @@ func on_add_button_pressed() -> void:
 		"task_name": ""
 	})
 
+# Main render function
 func render():
+	# Grab the current task name state
 	var task_name: String = self.state.task_name
 
 	return (
@@ -87,6 +101,8 @@ func render():
 				name: "NewTaskNameInputField"
 				placeholder_text: "Insert new task name here"
 				size_flags_horizontal: Control.SIZE_EXPAND_FILL
+				# Set the current text, cursor is not resetted to
+				# start because ReactGD handles that
 				text: task_name
 				theme: style.input_field
 				on_text_changed: "on_task_name_changed"

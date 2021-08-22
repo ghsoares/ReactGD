@@ -1,10 +1,19 @@
+# This is a more complex todo list example,
+# with more styling and other properties explanation
+# extends from ReactUI because is the first component
+# of the interface, is the same as the ReactComponent,
+# the difference is that the children tree is handled
+# from this node only
 extends ReactUI
 
+# Constant font paths by style
 const font_jetbrains_regular := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
 const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold.ttf"
 const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
 const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
 
+# UI styling, I won't comment much here because
+# the syntax is gonna change too
 const style := {
 	"container": {
 		"styles": {
@@ -44,14 +53,20 @@ const style := {
 	}
 }
 
+# Imports the necessary components on ready only
+# (due to how gdscript works, cyclic dependency issue is very common,
+# so use `load` on onready vars to properly import classes)
 onready var InputField = load("res://Scripts/Demos/Todo list/TodoListInputField.gdx")
 onready var Task = load("res://Scripts/Demos/Todo list/TodoListTask.gdx")
 
+# A simple tree constructor, sets the tasks array state to a
+# empty array
 func construct() -> void:
 	self.state = {
 		"tasks": []
 	}
 
+# Function called when a task is added, followed by the name
 func on_task_add(task_name: String) -> void:
 	self.set_state({
 		"tasks": self.state.tasks + [{
@@ -60,6 +75,8 @@ func on_task_add(task_name: String) -> void:
 		}]
 	})
 
+# Function called when a task done property is toggled,
+# followed by id
 func on_task_done_toggle(task_id: int, val: bool) -> void:
 	var tasks: Array = self.state.tasks
 
@@ -67,6 +84,8 @@ func on_task_done_toggle(task_id: int, val: bool) -> void:
 
 	self.set_state({"tasks": tasks})
 
+# Function called when a done task is removed,
+# followed by id
 func on_task_remove(task_id: int) -> void:
 	var tasks :Array = self.state.tasks
 	
@@ -76,10 +95,15 @@ func on_task_remove(task_id: int) -> void:
 		"tasks": tasks
 	})
 
+# Main render function
 func render():
+	# Retrieve added tasks
 	var tasks: Array = self.state.tasks
+	# Array containing children of the tasks
+	# or a label when there is no task
 	var children := []
 
+	# Display a message when there is no task
 	if tasks.empty():
 		children = [(
 			<Label
@@ -92,6 +116,10 @@ func render():
 			/>
 		)]
 	else:
+		# Iterate the added tasks and assign a Task child,
+		# don't forget to set the `key` property, which
+		# is needed to properly get the correct cached node
+		# in the tree
 		for i in range(tasks.size()):
 			var task = tasks[i]
 			children.append((
@@ -101,6 +129,9 @@ func render():
 					task_id: i,
 					task_name: task.name
 					task_done: task.done
+					# Assign the custom signals,
+					# usign the preffix `on_` to tell
+					# that this property is a signal
 					on_task_done_toggle: "on_task_done_toggle"
 					on_task_remove: "on_task_remove"
 				/>
@@ -149,6 +180,9 @@ func render():
 						name: "ScrollVBox"
 						size_flags_horizontal: Control.SIZE_EXPAND_FILL
 						size_flags_vertical: Control.SIZE_EXPAND_FILL
+						# Assign the children to a node directly,
+						# use this for single tags (eg. tags that
+						# opens and close in the same tag)
 						children: children
 					/>
 				</ScrollContainer>
