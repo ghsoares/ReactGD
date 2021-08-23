@@ -82,7 +82,7 @@ func render():
 				"font": {
 					# You can dynamically provide a font size, that is
 					# updated automatically
-					"size": 24.0,
+					"size": 48.0,
 					"use_filter": true,
 					# You can just provide the font path, that is loaded
 					# only once when the path changes
@@ -99,7 +99,14 @@ func render():
 		"click_count_label": {
 			"colors": {
 				"font_color": Color.black
-			}
+			},
+			"fonts": {
+				"font": {
+					"size": 38.0,
+					"use_filter": true,
+					"src": font_path
+				}
+			},
 		}
 	}
 
