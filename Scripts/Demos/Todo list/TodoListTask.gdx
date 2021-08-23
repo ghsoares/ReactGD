@@ -103,39 +103,39 @@ func render():
 	
 	return (
 		<PanelContainer
-			size_flags_horizontal: Control.SIZE_EXPAND_FILL
-			theme: style.task_frame
+			size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			theme = style.task_frame
 		>
 			<HBoxContainer>
 				<Label
 					# Remember to wrap with parentheses if you want to add a gdscript
 					# language code block to be executed on runtime
-					text: (str(task_id + 1))
+					text = (str(task_id + 1))
 				/>
 				<Control
-					name: "separator1"
-					rect_min_size: (Vector2(8.0, 0.0))
+					name = "separator1"
+					rect_min_size = (Vector2(8.0, 0.0))
 				/>
 				<Button
-					toggle_mode: true,
-					pressed: task_done
-					rect_min_size: (Vector2(22, 22))
-					on_toggled: "on_task_done_toggle"
-					theme: style.checkbox
+					toggle_mode = true,
+					pressed = task_done
+					rect_min_size = (Vector2(22, 22))
+					on_toggled = "on_task_done_toggle"
+					theme = style.checkbox
 				/>
 				<Control
-					rect_min_size: (Vector2(8.0, 0.0))
+					rect_min_size = (Vector2(8.0, 0.0))
 				/>
 				<Label
-					size_flags_horizontal: Control.SIZE_EXPAND_FILL
-					text: task_name
+					size_flags_horizontal = Control.SIZE_EXPAND_FILL
+					text = task_name
 				/>
 				<Button
-					text: "X"
-					rect_min_size: (Vector2(22, 22))
-					visible: task_done
-					on_pressed: "on_task_remove"
-					theme: style.remove_button
+					text = "X"
+					rect_min_size = (Vector2(22, 22))
+					visible = task_done
+					on_pressed = "on_task_remove"
+					theme = style.remove_button
 				/>
 			</HBoxContainer>
 		</PanelContainer>

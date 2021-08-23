@@ -95,29 +95,29 @@ func render():
 
 	return (
 		<HBoxContainer
-			size_flags_horizontal: Control.SIZE_EXPAND_FILL
+			size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		>
 			<LineEdit
-				name: "NewTaskNameInputField"
-				placeholder_text: "Insert new task name here"
-				size_flags_horizontal: Control.SIZE_EXPAND_FILL
+				name = "NewTaskNameInputField"
+				placeholder_text = "Insert new task name here"
+				size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				# Set the current text, cursor is not resetted to
 				# start because ReactGD handles that
-				text: task_name
-				theme: style.input_field
-				on_text_changed: "on_task_name_changed"
+				text = task_name
+				theme = style.input_field
+				on_text_changed = "on_task_name_changed"
 			/>
 			<Control
-				name: "separator"
-				rect_min_size: (Vector2(16.0, 0.0))
+				name = "separator"
+				rect_min_size = (Vector2(16.0, 0.0))
 			/>
 			<Button
-				name: "add_button"
-				text: "+"
-				rect_min_size: (Vector2(40.0, 40.0))
-				size_flags_vertical: Control.SIZE_SHRINK_CENTER
-				on_pressed: "on_add_button_pressed"
-				theme: style.add_button
+				name = "add_button"
+				text = "+"
+				rect_min_size = (Vector2(40.0, 40.0))
+				size_flags_vertical = Control.SIZE_SHRINK_CENTER
+				on_pressed = "on_add_button_pressed"
+				theme = style.add_button
 			/>
 		</HBoxContainer>
 	)

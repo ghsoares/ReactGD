@@ -107,12 +107,12 @@ func render():
 	if tasks.empty():
 		children = [(
 			<Label
-				name: "nothing_to_render"
-				text: "Nothing to do right now..."
-				size_flags_vertical: Control.SIZE_EXPAND_FILL
-				align: Label.ALIGN_CENTER
-				valign: Label.VALIGN_CENTER
-				theme: style.empty_list
+				name = "nothing_to_render"
+				text = "Nothing to do right now..."
+				size_flags_vertical = Control.SIZE_EXPAND_FILL
+				align = Label.ALIGN_CENTER
+				valign = Label.VALIGN_CENTER
+				theme = style.empty_list
 			/>
 		)]
 	else:
@@ -125,66 +125,66 @@ func render():
 					# When iterating and adding child components,
 					# don't forget to set the key property, to properly
 					# add the nodes in tree, else it will only show the last added
-					key: i
-					name: ("task_" + str(i))
-					task_id: i,
-					task_name: task.name
-					task_done: task.done
+					key = i
+					name = ("task_" + str(i))
+					task_id = i,
+					task_name = task.name
+					task_done = task.done
 					# Assign the custom signals,
 					# usign the preffix `on_` to tell
 					# that this property is a signal
-					on_task_done_toggle: "on_task_done_toggle"
-					on_task_remove: "on_task_remove"
+					on_task_done_toggle = "on_task_done_toggle"
+					on_task_remove = "on_task_remove"
 				/>
 			))
 	
 	return (
 		<PanelContainer
-			anchor_left: 0
-			anchor_top: 0
-			anchor_right: 1
-			anchor_bottom: 1
+			anchor_left = 0
+			anchor_top = 0
+			anchor_right = 1
+			anchor_bottom = 1
 
-			margin_left: 16.0
-			margin_top: 16.0
-			margin_bottom: -16.0
-			margin_right: -16.0
+			margin_left = 16.0
+			margin_top = 16.0
+			margin_bottom = -16.0
+			margin_right = -16.0
 
-			theme: style.container
+			theme = style.container
 		>
 			<VBoxContainer
-				size_flags_horizontal: Control.SIZE_EXPAND_FILL
-				size_flags_vertical: Control.SIZE_EXPAND_FILL
+				size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				size_flags_vertical = Control.SIZE_EXPAND_FILL
 			>
 				<Label
-					name: "Title1"
-					text: "Todo list"
-					theme: style.title1
+					name = "Title1"
+					text = "Todo list"
+					theme = style.title1
 				/>
-				<Control rect_min_size: (Vector2(0, 16))/>
+				<Control rect_min_size = (Vector2(0, 16))/>
 				<Label
-					name: "Title2"
-					text: "New task"
-					theme: style.title2
+					name = "Title2"
+					text = "New task"
+					theme = style.title2
 				/>
 				<InputField
-					name: "InputField"
-					on_task_add: "on_task_add"
+					name = "InputField"
+					on_task_add = "on_task_add"
 				/>
-				<Control rect_min_size: (Vector2(0, 16))/>
+				<Control rect_min_size = (Vector2(0, 16))/>
 				<ScrollContainer
-					name: "Scroll"
-					horizontal_enabled: false,
-					size_flags_vertical: Control.SIZE_EXPAND_FILL
+					name = "Scroll"
+					horizontal_enabled = false,
+					size_flags_vertical = Control.SIZE_EXPAND_FILL
 				>
 					<VBoxContainer
-						name: "ScrollVBox"
-						size_flags_horizontal: Control.SIZE_EXPAND_FILL
-						size_flags_vertical: Control.SIZE_EXPAND_FILL
+						name = "ScrollVBox"
+						size_flags_horizontal = Control.SIZE_EXPAND_FILL
+						size_flags_vertical = Control.SIZE_EXPAND_FILL
 						# Assign the children to a node directly,
 						# use this for single tags (eg. tags that
 						# opens and close in the same tag)
-						children: children
+						children = children
 					/>
 				</ScrollContainer>
 			</VBoxContainer>

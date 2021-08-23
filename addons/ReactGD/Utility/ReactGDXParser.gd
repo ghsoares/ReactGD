@@ -123,8 +123,8 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 	var tag_info := {}
 	
 	var tokenizer := ReactGDTokenizer.new()
-	tokenizer.add_token("symbol", "[\\w.]+")
-	tokenizer.add_token("prop_assign", ":")
+	tokenizer.add_token("symbol", "[\\w.:]+")
+	tokenizer.add_token("prop_assign", "=")
 	
 	tokenizer.add_token("integer", "[+-]?\\d+")
 	tokenizer.add_token("float", "[+-]?\\d*\\.\\d+")
