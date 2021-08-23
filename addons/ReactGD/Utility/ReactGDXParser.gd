@@ -74,38 +74,46 @@ func _extract_tags(code: String) -> Array:
 	var tags := []
 	
 	var tokens := tokenizer.tokenize(code)
+	tokens.pop_front()
+	tokens.pop_back()
 	
 	var num_tokens := tokens.size()
 	var i := 0
 	var j := -1
+	var ignore_count := 0
 	
 	while i < num_tokens:
-		if tokens[i].name == "tag_start_open" || tokens[i].name == "tag_end_open":
-			j = i
-		elif tokens[i].name == "tag_start_close" || tokens[i].name == "tag_single_close":
-			if j != -1:
-				var tag = code.substr(
-					tokens[j].match.get_start(),
-					tokens[i].match.get_end() - tokens[j].match.get_start()
-				)
-				if tokens[j].name == "tag_start_open":
-					if tokens[i].name == "tag_start_close":
+		if tokens[i].name == "par_open":
+			ignore_count += 1
+		elif tokens[i].name == "par_close":
+			ignore_count -= 1
+		if ignore_count == 0:
+			if tokens[i].name == "tag_start_open" || tokens[i].name == "tag_end_open":
+				j = i
+			elif tokens[i].name == "tag_start_close" || tokens[i].name == "tag_single_close":
+				if j != -1:
+					var tag = code.substr(
+						tokens[j].match.get_start(),
+						tokens[i].match.get_end() - tokens[j].match.get_start()
+					)
+					if tokens[j].name == "tag_start_open":
+						if tokens[i].name == "tag_start_close":
+							tags.append({
+								"type": "start",
+								"code": tag
+							})
+						elif tokens[i].name == "tag_single_close":
+							tags.append({
+								"type": "single",
+								"code": tag
+							})
+					elif tokens[j].name == "tag_end_open":
 						tags.append({
-							"type": "start",
+							"type": "end",
 							"code": tag
 						})
-					elif tokens[i].name == "tag_single_close":
-						tags.append({
-							"type": "single",
-							"code": tag
-						})
-				elif tokens[j].name == "tag_end_open":
-					tags.append({
-						"type": "end",
-						"code": tag
-					})
-				
-				j = -1
+					
+					j = -1
 		
 		i += 1
 	
@@ -170,7 +178,7 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 					tag_info.props[prop_name] = prop_val
 		
 		i = skip
-	
+
 	return tag_info
 
 func _build_hierarchy(tags: Array) -> Array:
@@ -290,6 +298,7 @@ func parse(code: String) -> String:
 					var new_code = _parse_gdx(substr)
 					code = code.replace(substr, new_code)
 					parsed = true
+					code = code.replace(substr, "{}")
 					break
 			
 			i += 1
