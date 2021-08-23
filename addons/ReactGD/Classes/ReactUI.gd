@@ -3,25 +3,42 @@ extends Control
 class_name ReactUI
 
 var _render_state: Dictionary
-var _dirty: bool
 var _cached_nodes: Dictionary
+var _components_to_update: Array
+var _num_components_to_update: int
 var state: Dictionary
 
 func _enter_tree() -> void:
 	_render_state = {}
-	_dirty = true
 	_cached_nodes = {}
+	_components_to_update = []
+	_num_components_to_update = 0
 	state = {}
+	_add_component_to_update(self)
 	construct()
 
 func construct() -> void: pass
 
 func set_state(new_state: Dictionary) -> void:
 	ReactGDDictionaryMethods.merge_dict(self.state, new_state)
-	_dirty = true
+	_add_component_to_update(self)
 
-func set_dirty() -> void:
-	_dirty = true
+func _add_component_to_update(comp: Node) -> void:
+	for other_comp in _components_to_update:
+		if other_comp.component == comp: return
+	
+	if comp == self:
+		_components_to_update.append({
+			"component": comp,
+			"child_idx": 0
+		})
+	else:
+		_components_to_update.append({
+			"component": comp,
+			"child_idx": comp.get_index()
+		})
+	
+	_num_components_to_update += 1
 
 func render() -> Dictionary:
 	return {}
@@ -30,30 +47,49 @@ func _process(delta) -> void:
 	render_process(delta)
 
 func render_process(delta) -> void:
-	if !_dirty: return
-	_dirty = false
+	if _num_components_to_update == 0: return
 	
 	var start = OS.get_ticks_msec()
 	
-	var new_render_state := render()
-	new_render_state = _build_tree(self, new_render_state, "")
-	var tree_diff = ReactGDDictionaryMethods.compute_diff(_render_state, new_render_state)
-	
-	_iterate_tree(self, self, tree_diff, 0)
-	_render_state = new_render_state
+	for i in range(_num_components_to_update):
+		var comp_info :Dictionary = _components_to_update[i]
+		var component :Node = comp_info.component
+		var parent :Node = component.get_parent()
+		if component == self:
+			var new_render_state :Dictionary = component.render()
+			new_render_state = _build_tree(self, new_render_state, "")
+			var tree_diff = ReactGDDictionaryMethods.compute_diff(_render_state, new_render_state)
+			
+			_iterate_tree(self, self, tree_diff, 0)
+			_render_state = new_render_state
+		else:
+			var path: String = component.path
+			var _prev_render_state = ReactGDDictionaryMethods.path_get(_render_state, path, true, {})
+			var new_render_state :Dictionary = component.render()
+			new_render_state = _build_tree(component.parent_component, new_render_state, path + ".children.")
+			
+			var first_id = new_render_state[new_render_state.keys()[0]]
+			var tree_diff = ReactGDDictionaryMethods.compute_diff(_prev_render_state.children.get(first_id, {}), new_render_state)
+			
+			_iterate_tree(component.parent_component, parent, tree_diff, component.get_index())
+			_prev_render_state.children[first_id] = new_render_state
 	
 	var elapsed = OS.get_ticks_msec() - start
 	print("(" + name + ")" + " Render: ", elapsed, " ms")
+	
+	_num_components_to_update = 0
+	_components_to_update.clear()
 
-func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> Dictionary:
-	id = id + render_state.id
+func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -> Dictionary:
+	var id = render_state.id
+	path = path + id
 	var type = render_state.type
 	var props :Dictionary = render_state.get("props", {})
 	var children :Array = props.get("children", [])
 	var node := {}
 	
-	if self._cached_nodes.has(id):
-		node = self._cached_nodes[id]
+	if self._cached_nodes.has(path):
+		node = self._cached_nodes[path]
 		var instance = node.instance
 		#if type != node.type:
 		#	instance = type.new()
@@ -61,6 +97,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> 
 		#		instance.construct()
 		node = {
 			"id": id,
+			"path": path,
 			"type": type,
 			"instance": instance,
 			"children": {},
@@ -69,10 +106,11 @@ func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> 
 			"theme": {},
 			"ref": "",
 		}
-		self._cached_nodes[id] = node
+		self._cached_nodes[path] = node
 	else:
 		node = {
 			"id": id,
+			"path": path,
 			"type": type,
 			"instance": type.new(),
 			"children": {},
@@ -83,7 +121,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> 
 		}
 		if node.instance.get_class() == "ReactComponent":
 			node.instance.construct()
-		self._cached_nodes[id] = node
+		self._cached_nodes[path] = node
 	
 	node.props = props
 	for p_name in props.keys():
@@ -106,6 +144,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> 
 	
 	if node.instance.get_class() == "ReactComponent":
 		node.instance.id = id
+		node.instance.path = path
 		node.instance.tree = self
 		node.instance.props = props
 		node.instance.parent_component = prev_component
@@ -115,14 +154,15 @@ func _build_tree(prev_component: Node, render_state: Dictionary, id: String) -> 
 	if children.size() > 0:
 		node.children = {}
 		for i in range(children.size()):
-			var c = self._build_tree(prev_component, children[i], id + "." )
+			var c = self._build_tree(prev_component, children[i], path + ".children." )
 			var c_id = c.id
 			node.children[c_id] = c
 	
 	return node
 
-func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_idx: int) -> void:
+func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: int) -> void:
 	var id: Dictionary = tree.id
+	var path: Dictionary = tree.path
 	var instance: Dictionary = tree.instance
 	var children: Dictionary = tree.children
 	var props: Dictionary = tree.props
@@ -133,12 +173,12 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_i
 	
 	if instance.change_type == 0:
 		parent.add_child(instance.value)
-		parent.move_child(instance.value, child_idx)
+		parent.move_child(instance.value, idx)
 		if ref.value != "":
 			root_component.set(ref.value, instance.value)
 	elif instance.change_type == 2:
 		parent.remove_child(instance.value)
-		_cached_nodes.erase(id.value)
+		_cached_nodes.erase(path.value)
 		if !children.value.empty():
 			for c_id in children.value.keys():
 				var c :Dictionary = children.value[c_id]
@@ -167,7 +207,7 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, child_i
 			
 			if c.change_type != 3:
 				if c_type == "ReactComponent":
-					_iterate_tree(instance.value, parent, c.value, child_idx + off + 1)
+					_iterate_tree(instance.value, parent, c.value, idx + off + 1)
 				else:
 					_iterate_tree(root_component, instance.value, c.value, off)
 			

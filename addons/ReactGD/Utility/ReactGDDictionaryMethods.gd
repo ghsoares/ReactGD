@@ -48,9 +48,16 @@ static func unfold_string(s: String, indent_str: String) -> String:
 	
 	return res
 
-static func path_get(dict: Dictionary, path: String, default = null):
+static func path_get(dict: Dictionary, path: String, first_is_root: bool = false, default = null):
+	if path == "":
+		return dict
+	
 	var splitted :Array = path.split(".")
 	var first = splitted.pop_front()
+	if first_is_root:
+		path = PoolStringArray(splitted).join(".")
+		if path == "": return dict
+		first = splitted.pop_front()
 	
 	if splitted.size() == 0:
 		return dict.get(path, default)
