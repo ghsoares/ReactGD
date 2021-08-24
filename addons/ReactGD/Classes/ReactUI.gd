@@ -100,15 +100,15 @@ func render_process(delta) -> void:
 			var new_render_state :Dictionary = _prev_render_state.duplicate(true)
 			var render: Dictionary = component.render()
 			
-			render = _build_tree(component.parent_component, render, path + ".children.")
+			render = _build_tree(component.parent_component, render, path + ".c.")
 			
 			var first_id = render[render.keys()[0]]
-			new_render_state.children = {first_id: render}
+			new_render_state.c = {first_id: render}
 			
 			var tree_diff = ReactGDDictionaryMethods.compute_diff(_prev_render_state, new_render_state)
 			
 			_iterate_tree(component.parent_component, parent, tree_diff, component.get_index())
-			_prev_render_state.children = {first_id: render}
+			_prev_render_state.c = {first_id: render}
 	
 	var elapsed = OS.get_ticks_msec() - start
 	print("(" + name + ")" + " Render: ", elapsed, " ms")
@@ -133,7 +133,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 			"path": path,
 			"type": type,
 			"instance": instance,
-			"children": {},
+			"c": {},
 			"props": {},
 			"signals": {},
 			"theme": {},
@@ -146,7 +146,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 			"path": path,
 			"type": type,
 			"instance": type.new(),
-			"children": {},
+			"c": {},
 			"props": {},
 			"signals": {},
 			"theme": {},
@@ -187,11 +187,11 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 		prev_component = node.instance
 	
 	if children.size() > 0:
-		node.children = {}
+		node.c = {}
 		for i in range(children.size()):
-			var c = self._build_tree(prev_component, children[i], path + ".children." )
+			var c = self._build_tree(prev_component, children[i], path + ".c." )
 			var c_id = c.id
-			node.children[c_id] = c
+			node.c[c_id] = c
 	
 	return node
 
@@ -199,7 +199,7 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: in
 	var id: Dictionary = tree.id
 	var path: Dictionary = tree.path
 	var instance: Dictionary = tree.instance
-	var children: Dictionary = tree.children
+	var children: Dictionary = tree.c
 	var props: Dictionary = tree.props
 	var signals: Dictionary = tree.signals
 	var theme: Dictionary = tree.theme
@@ -214,6 +214,7 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: in
 	elif instance.change_type == 2:
 		parent.remove_child(instance.value)
 		_cached_nodes.erase(path.value)
+		instance.value.queue_free()
 		if !children.value.empty():
 			for c_id in children.value.keys():
 				var c :Dictionary = children.value[c_id]
