@@ -4,10 +4,14 @@ class_name ReactGDXParser
 
 var rng :RandomNumberGenerator
 var unfold_blocks: bool
+var sed: String
+var start: int
 
 func _init() -> void:
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
+	sed = str(rng.randi())
+	start = OS.get_ticks_msec()
 
 func _random_id(added_ids: Array):
 	var random_chars := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_='
@@ -238,11 +242,13 @@ func _parse_gdx(code: String) -> String:
 	comment_reg.compile("#.*")
 	code = comment_reg.sub(code, " ", true)
 	
-	
 	var tags := _extract_tags(code)
 	
 	for i in range(tags.size()):
 		tags[i] = _parse_tag_info(tags[i])
+	
+	rng.seed = hash(tags[0].class_type + sed)
+	rng.state = 137
 	
 	var hierarchy :Dictionary = _build_hierarchy(tags)[0]
 	var final := str(hierarchy)
