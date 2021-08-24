@@ -98,13 +98,12 @@ And here's a generic todo list:
 All the demos can be found in [Demo Scenes](Demo%20Scenes)
 
 ## TODO:
-- [ ] Rename some things (ReactGD is not the best way to call it, as it is only inspired by ReactJS, not based on);
-- [ ] Turn into a addon;
 - [ ] Add documentation;
 - [ ] Improve gdx;
-- [ ] Add functional based rendering (and hooks);
-- [ ] Create intellisense, as extension for Visual Studio Code;
-- [ ] Add a easy way to create prop transitions (with tweens);
+- [ ] Add functional based rendering (and hooks, maybe?);
+- [ ] Create intellisense extension for Visual Studio Code;
+- [x] Add a easy way to create prop transitions (with tweens);
 - [ ] Upload to Godot's Asset Library;
-- [ ] Port to GDNative as a native plugin.
+- [ ] Port to GDNative as a native plugin;
+- [ ] Create custom import syntax.
 
