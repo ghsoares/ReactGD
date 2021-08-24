@@ -96,15 +96,19 @@ func render_process(delta) -> void:
 			_render_state = new_render_state
 		else:
 			var path: String = component.path
-			var _prev_render_state = ReactGDDictionaryMethods.path_get(_render_state, path, true, {})
-			var new_render_state :Dictionary = component.render()
-			new_render_state = _build_tree(component.parent_component, new_render_state, path + ".children.")
+			var _prev_render_state :Dictionary = ReactGDDictionaryMethods.path_get(_render_state, path, true, {})
+			var new_render_state :Dictionary = _prev_render_state.duplicate(true)
+			var render: Dictionary = component.render()
 			
-			var first_id = new_render_state[new_render_state.keys()[0]]
-			var tree_diff = ReactGDDictionaryMethods.compute_diff(_prev_render_state.children.get(first_id, {}), new_render_state)
+			render = _build_tree(component.parent_component, render, path + ".children.")
+			
+			var first_id = render[render.keys()[0]]
+			new_render_state.children = {first_id: render}
+			
+			var tree_diff = ReactGDDictionaryMethods.compute_diff(_prev_render_state, new_render_state)
 			
 			_iterate_tree(component.parent_component, parent, tree_diff, component.get_index())
-			_prev_render_state.children[first_id] = new_render_state
+			_prev_render_state.children = {first_id: render}
 	
 	var elapsed = OS.get_ticks_msec() - start
 	print("(" + name + ")" + " Render: ", elapsed, " ms")
@@ -119,14 +123,11 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 	var props :Dictionary = render_state.get("props", {})
 	var children :Array = props.get("children", [])
 	var node := {}
+	var node_added := false
 	
 	if self._cached_nodes.has(path):
 		node = self._cached_nodes[path]
 		var instance = node.instance
-		#if type != node.type:
-		#	instance = type.new()
-		#	if instance.get_class() == "ReactComponent":
-		#		instance.construct()
 		node = {
 			"id": id,
 			"path": path,
@@ -151,8 +152,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 			"theme": {},
 			"ref": "",
 		}
-		if node.instance.get_class() == "ReactComponent":
-			node.instance.construct()
+		node_added = true
 		self._cached_nodes[path] = node
 	
 	node.props = props
@@ -181,6 +181,8 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 		node.instance.tree = self
 		node.instance.props = props
 		node.instance.parent_component = prev_component
+		if node_added:
+			node.instance.construct()
 		children = [node.instance.render()]
 		prev_component = node.instance
 	
@@ -244,12 +246,7 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: in
 				else:
 					_iterate_tree(root_component, instance.value, c.value, off)
 			
-			if c.change_type == 3:
-				if c.value.instance.get_class() == "ReactComponent":
-					off += 2
-				else:
-					off += 1
-			elif c.change_type != 2:
+			if c.change_type != 2:
 				if c.value.instance.value.get_class() == "ReactComponent":
 					off += 2
 				else:
@@ -264,10 +261,15 @@ func _update_props(node: Node, props: Dictionary) -> void:
 				prop_value.data.initial_val = node.get(prop_name)
 				_property_transition(node, prop_name, prop_value)
 			else:
-				node.set(prop_name, prop_value)
 				if node is LineEdit && prop_name == "text":
+					node.text = prop_value
 					node.caret_position = prop_value.length()
-
+					continue
+				elif node is TextureRect && prop_name == "texture":
+					if prop_value is String:
+						node.texture = ResourceLoader.load(prop_value)
+						continue
+				node.set(prop_name, prop_value)
 
 func _update_signals(target_component: Node, node: Node, signals: Dictionary) -> void:
 	for signal_name in signals.keys():

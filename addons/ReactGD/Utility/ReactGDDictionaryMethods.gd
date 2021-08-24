@@ -122,7 +122,7 @@ static func compute_diff(objA, objB) -> Dictionary:
 				else:
 					diff[k] = {
 						"change_type": DIFF_TYPE.DIFF_UNCHANGED,
-						"value": objB[k]
+						"value": compute_diff(objA[k], objB[k])
 					}
 			else:
 				if typeof(objA[k]) != typeof(objB[k]) || objA[k] != objB[k]:

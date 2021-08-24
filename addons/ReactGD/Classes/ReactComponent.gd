@@ -21,7 +21,6 @@ func do_shake(peak_val, final_val, duration: float, trans_type: int = 0, ease_ty
 
 func construct() -> void:
 	self.state = {}
-	self.props = {}
 
 func render() -> Dictionary:
 	return {}
