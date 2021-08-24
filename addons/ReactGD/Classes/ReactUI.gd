@@ -247,7 +247,13 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: in
 				else:
 					_iterate_tree(root_component, instance.value, c.value, off)
 			
-			if c.change_type != 2:
+			if c.change_type == 3:
+				if c.value.instance.get_class() == "ReactComponent":
+					off += 2
+				else:
+					off += 1
+			
+			elif c.change_type != 2:
 				if c.value.instance.value.get_class() == "ReactComponent":
 					off += 2
 				else:
@@ -258,7 +264,7 @@ func _update_props(node: Node, props: Dictionary) -> void:
 		var prop = props[prop_name]
 		if prop.change_type != 3:
 			var prop_value = prop.value
-			if prop_value is Transition:
+			if prop_value is Transition && prop.change_type != 2:
 				prop_value.data.initial_val = node.get(prop_name)
 				_property_transition(node, prop_name, prop_value)
 			else:
@@ -292,6 +298,8 @@ func _update_signals(target_component: Node, node: Node, signals: Dictionary) ->
 			node.disconnect(signal_name, target_component, prev_target_name)
 
 func _update_theme(node: Node, theme: Dictionary) -> void:
+	if not node is Control: return
+	
 	var styles :Dictionary = theme.get("styles", {})
 	var colors :Dictionary = theme.get("colors", {})
 	var constants :Dictionary = theme.get("constants", {})
