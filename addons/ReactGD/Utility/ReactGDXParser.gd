@@ -64,7 +64,7 @@ func _extract_tags(code: String) -> Array:
 	var tokenizer := ReactGDTokenizer.new()
 	tokenizer.add_token("symbol", "[\\w.]+")
 	tokenizer.add_token("string", "\"[^\"]*\"")
-	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]+\"\"\"")
+	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]*\"\"\"")
 	tokenizer.add_token("tag_start_open", "<")
 	tokenizer.add_token("tag_start_close", ">")
 	tokenizer.add_token("tag_end_open", "</")
@@ -129,8 +129,8 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 	tokenizer.add_token("integer", "[+-]?\\d+")
 	tokenizer.add_token("float", "[+-]?\\d*\\.\\d+")
 	
-	tokenizer.add_token("string", "\"[^\"]+\"")
-	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]+\"\"\"")
+	tokenizer.add_token("string", "\"[^\"]*\"")
+	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]*\"\"\"")
 	tokenizer.add_token("node_path", "\\@\"[^\"]+\"")
 	tokenizer.add_token("get_node", "\\$\"[^\"]+\"")
 	tokenizer.add_token("par_open", "\\(")
@@ -238,16 +238,11 @@ func _parse_gdx(code: String) -> String:
 	comment_reg.compile("#.*")
 	code = comment_reg.sub(code, " ", true)
 	
-	print(code)
 	
 	var tags := _extract_tags(code)
 	
-	
-	
 	for i in range(tags.size()):
 		tags[i] = _parse_tag_info(tags[i])
-	
-	
 	
 	var hierarchy :Dictionary = _build_hierarchy(tags)[0]
 	var final := str(hierarchy)
