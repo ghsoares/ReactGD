@@ -9,16 +9,6 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Container",
-"class": "FlexGridContainer",
-"language": "GDScript",
-"path": "res://Scripts/FlexGridContainer.gd"
-}, {
-"base": "Node",
-"class": "Inventory",
-"language": "GDScript",
-"path": "res://Scripts/Demos/Inventory/Inventory.gd"
-}, {
 "base": "Node",
 "class": "ReactComponent",
 "language": "GDScript",
@@ -39,18 +29,22 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/ReactGD/Utility/ReactGDXParser.gd"
 }, {
+"base": "Node",
+"class": "ReactTransition",
+"language": "GDScript",
+"path": "res://addons/ReactGD/Classes/ReactTransition.gd"
+}, {
 "base": "Control",
 "class": "ReactUI",
 "language": "GDScript",
 "path": "res://addons/ReactGD/Classes/ReactUI.gd"
 } ]
 _global_script_class_icons={
-"FlexGridContainer": "",
-"Inventory": "",
 "ReactComponent": "",
 "ReactGDDictionaryMethods": "",
 "ReactGDTokenizer": "",
 "ReactGDXParser": "",
+"ReactTransition": "",
 "ReactUI": ""
 }
 

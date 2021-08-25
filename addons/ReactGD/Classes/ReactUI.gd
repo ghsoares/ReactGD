@@ -2,12 +2,6 @@ extends Control
 
 class_name ReactUI
 
-class Transition:
-	var data: Dictionary
-	
-	func _init(_data) -> void:
-		self.data = _data
-
 var _render_state: Dictionary
 var _cached_nodes: Dictionary
 var _components_to_update: Array
@@ -34,26 +28,8 @@ func set_state(new_state: Dictionary) -> void:
 	ReactGDDictionaryMethods.merge_dict(self.state, new_state)
 	_add_component_to_update(self)
 
-func do_transition(final_val, duration: float, trans_type: int = 0, ease_type: int = 2, delay: float = 0.0):
-	return Transition.new({
-		"type": "simple",
-		"final_val": final_val,
-		"duration": duration,
-		"trans_type": trans_type,
-		"ease_type": ease_type,
-		"delay": delay
-	})
-
-func do_shake(peak_val, final_val, duration: float, trans_type: int = 0, ease_type: int = 2, delay: float = 0.0):
-	return Transition.new({
-		"type": "shake",
-		"peak_val": peak_val,
-		"final_val": final_val,
-		"duration": duration,
-		"trans_type": trans_type,
-		"ease_type": ease_type,
-		"delay": delay
-	})
+func do_transition() -> ReactTransition:
+	return ReactTransition.new()
 
 func _add_component_to_update(comp: Node) -> void:
 	for other_comp in _components_to_update:
@@ -158,6 +134,10 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 	node.props = props
 	for p_name in props.keys():
 		var prop_value = props[p_name]
+		if prop_value is ReactTransition:
+			node.props[p_name] = {
+				"transition_data": prop_value.data
+			}
 		if p_name == "ref":
 			node.ref = props[p_name]
 		elif p_name == "theme":
@@ -269,9 +249,13 @@ func _update_props(node: Node, props: Dictionary) -> void:
 		var prop = props[prop_name]
 		if prop.change_type != 3:
 			var prop_value = prop.value
-			if prop_value is Transition && prop.change_type != 2:
-				prop_value.data.initial_val = node.get(prop_name)
-				_property_transition(node, prop_name, prop_value)
+			if prop_value is Dictionary && prop_value.has("transition_data"):
+				if prop.change_type < 2:
+					var data := {
+						"initial_val": node.get_indexed(NodePath(prop_name)),
+						"frames": prop_value.transition_data
+					}
+					_property_transition(node, prop_name, data)
 			else:
 				if node is LineEdit && prop_name == "text":
 					node.text = prop_value
@@ -381,51 +365,51 @@ func _update_styles(node: Control, styles: Dictionary) -> void:
 		
 		for prop in styles[b].value:
 			var prop_val = styles[b].value[prop].value
-			if prop_val is Transition:
-				prop_val.data.initial_val = style_obj.get(prop)
-				_property_transition(style_obj, prop, prop_val)
-			else:
-				match prop:
-					"border_width":
-						style_obj.set("border_width_left", prop_val)
-						style_obj.set("border_width_right", prop_val)
-						style_obj.set("border_width_top", prop_val)
-						style_obj.set("border_width_bottom", prop_val)
-					"border_width_horizontal":
-						style_obj.set("border_width_left", prop_val)
-						style_obj.set("border_width_right", prop_val)
-					"border_width_vertical":
-						style_obj.set("border_width_top", prop_val)
-						style_obj.set("border_width_bottom", prop_val)
-					"corner_radius":
-						style_obj.set("corner_radius_top_left", prop_val)
-						style_obj.set("corner_radius_top_right", prop_val)
-						style_obj.set("corner_radius_bottom_left", prop_val)
-						style_obj.set("corner_radius_bottom_right", prop_val)
-					"expand_margin":
-						style_obj.set("expand_margin_left", prop_val)
-						style_obj.set("expand_margin_right", prop_val)
-						style_obj.set("expand_margin_top", prop_val)
-						style_obj.set("expand_margin_bottom", prop_val)
-					"expand_margin_horizontal":
-						style_obj.set("expand_margin_left", prop_val)
-						style_obj.set("expand_margin_right", prop_val)
-					"expand_margin_vertical":
-						style_obj.set("expand_margin_top", prop_val)
-						style_obj.set("expand_margin_bottom", prop_val)
-					"content_margin":
-						style_obj.set("content_margin_left", prop_val)
-						style_obj.set("content_margin_right", prop_val)
-						style_obj.set("content_margin_top", prop_val)
-						style_obj.set("content_margin_bottom", prop_val)
-					"content_margin_horizontal":
-						style_obj.set("content_margin_left", prop_val)
-						style_obj.set("content_margin_right", prop_val)
-					"content_margin_vertical":
-						style_obj.set("content_margin_top", prop_val)
-						style_obj.set("content_margin_bottom", prop_val)
-					_:
-						style_obj.set(prop, prop_val)
+			#if prop_val is Transition:
+			#	prop_val.initial_val = style_obj.get(prop)
+			#	_property_transition(style_obj, prop, prop_val)
+			#else:
+			match prop:
+				"border_width":
+					style_obj.set("border_width_left", prop_val)
+					style_obj.set("border_width_right", prop_val)
+					style_obj.set("border_width_top", prop_val)
+					style_obj.set("border_width_bottom", prop_val)
+				"border_width_horizontal":
+					style_obj.set("border_width_left", prop_val)
+					style_obj.set("border_width_right", prop_val)
+				"border_width_vertical":
+					style_obj.set("border_width_top", prop_val)
+					style_obj.set("border_width_bottom", prop_val)
+				"corner_radius":
+					style_obj.set("corner_radius_top_left", prop_val)
+					style_obj.set("corner_radius_top_right", prop_val)
+					style_obj.set("corner_radius_bottom_left", prop_val)
+					style_obj.set("corner_radius_bottom_right", prop_val)
+				"expand_margin":
+					style_obj.set("expand_margin_left", prop_val)
+					style_obj.set("expand_margin_right", prop_val)
+					style_obj.set("expand_margin_top", prop_val)
+					style_obj.set("expand_margin_bottom", prop_val)
+				"expand_margin_horizontal":
+					style_obj.set("expand_margin_left", prop_val)
+					style_obj.set("expand_margin_right", prop_val)
+				"expand_margin_vertical":
+					style_obj.set("expand_margin_top", prop_val)
+					style_obj.set("expand_margin_bottom", prop_val)
+				"content_margin":
+					style_obj.set("content_margin_left", prop_val)
+					style_obj.set("content_margin_right", prop_val)
+					style_obj.set("content_margin_top", prop_val)
+					style_obj.set("content_margin_bottom", prop_val)
+				"content_margin_horizontal":
+					style_obj.set("content_margin_left", prop_val)
+					style_obj.set("content_margin_right", prop_val)
+				"content_margin_vertical":
+					style_obj.set("content_margin_top", prop_val)
+					style_obj.set("content_margin_bottom", prop_val)
+				_:
+					style_obj.set(prop, prop_val)
 
 func _update_colors(node: Control, colors: Dictionary) -> void:
 	for c in colors:
@@ -441,11 +425,11 @@ func _update_colors(node: Control, colors: Dictionary) -> void:
 		else:
 			value = colors[c].value
 		
-		if value is Transition:
-			value.data.initial_val = node.get_color(c)
-			_property_transition(node, "custom_colors/" + c, value)
-		else:
-			node.add_color_override(c, value)
+		#if value is ReactTransition:
+		#	value.initial_val = node.get_color(c)
+		#	_property_transition(node, "custom_colors/" + c, value)
+		#else:
+		node.add_color_override(c, value)
 
 func _update_constants(node: Control, constants: Dictionary) -> void:
 	for c in constants:
@@ -460,11 +444,11 @@ func _update_constants(node: Control, constants: Dictionary) -> void:
 		else:
 			value = constants[c].value
 		
-		if value is Transition:
-			value.data.initial_val = node.get_constant(c)
-			_property_transition(node, "custom_constants/" + c, value)
-		else:
-			node.add_constant_override(c, value)
+		#if value is Transition:
+		#	value.data.initial_val = node.get_constant(c)
+		#	_property_transition(node, "custom_constants/" + c, value)
+		#else:
+		node.add_constant_override(c, value)
 
 func _update_fonts(node: Control, fonts: Dictionary) -> void:
 	for f in fonts:
@@ -487,10 +471,10 @@ func _update_fonts(node: Control, fonts: Dictionary) -> void:
 				value.font_data = prop_val
 				continue
 			
-			if prop_val is Transition:
-				_property_transition(value, prop, prop_val)
-			else:
-				value.set(prop, prop_val)
+			#if prop_val is Transition:
+			#	_property_transition(value, prop, prop_val)
+			#else:
+			value.set(prop, prop_val)
 
 func _update_icons(node: Control, icons: Dictionary) -> void:
 	for i in icons:
@@ -507,27 +491,21 @@ func _update_icons(node: Control, icons: Dictionary) -> void:
 		
 		node.add_icon_override(i, value)
 
-func _property_transition(obj: Object, prop_name: String, transition_data: Transition) -> void:
+func _property_transition(obj: Object, prop_name: String, transition_data: Dictionary) -> void:
 	_tw.stop(obj, prop_name)
+	print(JSON.print(transition_data, " "))
+	#{initial_val:1, transition_data:{0:{duration:0.066667, ease_tye:0, final_value:1.4,
+	#time:0.1, trans_type:0}, 1:{duration:0.066667, ease_tye:0, final_value:1.2, time:0.166667,
+	#trans_type:0}, 2:{duration:0.066667, ease_tye:0, final_value:1, time:0.233333, trans_type:0}}}
 	
-	match transition_data.data.type:
-		"simple":
-			_tw.interpolate_property(
-				obj, prop_name, transition_data.data.initial_val, transition_data.data.final_val,
-				transition_data.data.duration, transition_data.data.trans_type,
-				transition_data.data.ease_type, transition_data.data.delay
-			)
-		"shake":
-			_tw.interpolate_property(
-				obj, prop_name, transition_data.data.initial_val, transition_data.data.peak_val,
-				transition_data.data.duration * .5, transition_data.data.trans_type,
-				transition_data.data.ease_type, transition_data.data.delay
-			)
-			_tw.interpolate_property(
-				obj, prop_name, transition_data.data.peak_val, transition_data.data.final_val,
-				transition_data.data.duration * .5, transition_data.data.trans_type,
-				transition_data.data.ease_type, transition_data.data.delay + transition_data.data.duration * .5
-			)
+	var val = transition_data.initial_val
+	var frames: Dictionary = transition_data.frames.value
+	for i in frames.keys():
+		var frame: Dictionary = frames[i].value
+		_tw.interpolate_property(
+			obj, prop_name, val, frame.final_value, frame.duration,
+			frame.trans_type, frame.ease_type, frame.time
+		)
 	
 	_tw.start()
 

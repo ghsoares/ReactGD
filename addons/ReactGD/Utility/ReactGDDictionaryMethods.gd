@@ -109,7 +109,7 @@ static func compute_diff(objA, objB) -> Dictionary:
 					"value": objA[k]
 				}
 		elif objA.has(k) && objB.has(k):
-			if objA[k] is Dictionary:
+			if objA[k] is Dictionary && objB[k] is Dictionary:
 				if objA[k].hash() != objB[k].hash():
 					diff[k] = {
 						"change_type": DIFF_TYPE.DIFF_MODIFIED,
@@ -119,8 +119,20 @@ static func compute_diff(objA, objB) -> Dictionary:
 				else:
 					diff[k] = {
 						"change_type": DIFF_TYPE.DIFF_UNCHANGED,
-						"value": objB[k]
+						"value": compute_diff(objA[k], objB[k])
 					}
+			elif objA[k] is Dictionary:
+				diff[k] = {
+					"change_type": DIFF_TYPE.DIFF_MODIFIED,
+					"prev_value": objA[k],
+					"value": objB[k]
+				}
+			elif objB[k] is Dictionary:
+				diff[k] = {
+					"change_type": DIFF_TYPE.DIFF_MODIFIED,
+					"prev_value": objA[k],
+					"value": compute_diff({}, objB[k])
+				}
 			else:
 				if typeof(objA[k]) != typeof(objB[k]) || objA[k] != objB[k]:
 					diff[k] = {
