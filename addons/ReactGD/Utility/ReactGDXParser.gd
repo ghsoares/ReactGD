@@ -45,6 +45,48 @@ func _find_literal_close(i: int, tokens: Array, open_name: String, close_name: S
 	
 	return -1
 
+func _find_lambda(i: int, tokens: Array) -> Dictionary:
+	var count := 0
+	var num_tokens := tokens.size()
+	
+	var par_count := 0
+	var dict_count := 0
+	var args_start := -1
+	var args_end := -1
+	var expression_start := -1
+	var expression_end := -1
+	
+	while i < num_tokens:
+		if args_end == -1:
+			if tokens[i].name == "par_open":
+				if args_start == -1:
+					args_start = i
+				par_count += 1
+			elif tokens[i].name == "par_close":
+				par_count -= 1
+				if par_count == 0:
+					args_end = i
+		
+		if expression_end == -1:
+			if tokens[i].name == "dict_open":
+				if expression_start == -1:
+					expression_start = i
+				dict_count += 1
+			elif tokens[i].name == "dict_close":
+				dict_count -= 1
+				if dict_count == 0:
+					expression_end = i
+					break
+		
+		i += 1
+	
+	return {
+		"args_start": args_start,
+		"args_end": args_end,
+		"expression_start": expression_start,
+		"expression_end": expression_end
+	}
+
 func _find_tag_end(i: int, tags: Array, type: String) -> int:
 	var count := 0
 	var num_tags := tags.size()
@@ -66,13 +108,14 @@ func _find_tag_end(i: int, tags: Array, type: String) -> int:
 
 func _extract_tags(code: String) -> Array:
 	var tokenizer := ReactGDTokenizer.new()
-	tokenizer.add_token("symbol", "[\\w.]+")
+	tokenizer.add_token("symbol", "\\$?[\\w.]+")
 	tokenizer.add_token("string", "\"[^\"]*\"")
 	tokenizer.add_token("multiline_string", "\"\"\"[^\"\"\"]*\"\"\"")
 	tokenizer.add_token("tag_start_open", "<")
 	tokenizer.add_token("tag_start_close", ">")
 	tokenizer.add_token("tag_end_open", "</")
 	tokenizer.add_token("tag_single_close", "/>")
+	tokenizer.add_token("arrow", "=>")
 	tokenizer.add_token("par_open", "\\(")
 	tokenizer.add_token("par_close", "\\)")
 	var tags := []
@@ -129,6 +172,7 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 	var tokenizer := ReactGDTokenizer.new()
 	tokenizer.add_token("symbol", "[\\w.:]+")
 	tokenizer.add_token("prop_assign", "=")
+	tokenizer.add_token("arrow", "=>")
 	
 	tokenizer.add_token("integer", "[+-]?\\d+")
 	tokenizer.add_token("float", "[+-]?\\d*\\.\\d+")
@@ -178,8 +222,40 @@ func _parse_tag_info(tag: Dictionary) -> Dictionary:
 					tag_info.props[prop_name] = prop_val
 					skip = end_i + 1
 				else:
-					var prop_val = tokens[i + 2].match.get_string()
-					tag_info.props[prop_name] = prop_val
+					if tokens[i + 2].name == "symbol" && tokens[i + 2].match.get_string() == "func":
+						var lambda = _find_lambda(i + 2, tokens)
+						
+						var t_arg_start = tokens[lambda.args_start].match.get_start() + 1
+						var t_arg_end = tokens[lambda.args_end].match.get_end() - 1
+						
+						var t_exp_start = tokens[lambda.expression_start].match.get_start() + 1
+						var t_exp_end = tokens[lambda.expression_end].match.get_end() - 1
+						
+						var args_code = tag.code.substr(
+							t_arg_start,
+							t_arg_end - t_arg_start
+						)
+						var expression_code = tag.code.substr(
+							t_exp_start,
+							t_exp_end - t_exp_start
+						)
+						
+						var args = args_code.replace(" ", "").split(",")
+						
+						for j in range(args.size()):
+							args[j] = '"' + args[j] + '"'
+						
+						tag_info.props[prop_name] = str({
+							'"args"': '[' +  PoolStringArray(args).join(',') + ']',
+							'"expression"': '"""' + expression_code + '"""'
+						})
+						
+						skip = lambda.expression_end + 1
+					else:
+						var prop_val = tokens[i + 2].match.get_string()
+						if prop_val.begins_with("$self"):
+							prop_val = '"' + prop_val + '"'
+						tag_info.props[prop_name] = prop_val
 		
 		i = skip
 
@@ -205,7 +281,8 @@ func _build_hierarchy(tags: Array) -> Array:
 				curr_node['"id"'] += " + str(" + props_key + ")"
 			
 			for prop_name in tags[i].props.keys():
-				props['"' + prop_name + '"'] = tags[i].props[prop_name]
+				var prop_value = tags[i].props[prop_name]
+				props['"' + prop_name + '"'] = prop_value
 			
 			curr_node['"props"'] = props
 		

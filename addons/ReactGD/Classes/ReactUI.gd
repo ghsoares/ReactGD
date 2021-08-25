@@ -273,29 +273,65 @@ func _update_props(node: Node, props: Dictionary) -> void:
 					node.caret_position = prop_value.length()
 					continue
 				elif node is TextureRect && prop_name == "texture":
-					if prop_value is String:
+					if prop_value is String && prop_value != "":
 						node.texture = ResourceLoader.load(prop_value)
+						continue
+					else:
+						node.texture = null
 						continue
 				node.set(prop_name, prop_value)
 
 func _update_signals(target_component: Node, node: Node, signals: Dictionary) -> void:
 	for signal_name in signals.keys():
 		var sig = signals[signal_name]
-		if sig.change_type == 0:
-			var target_name = sig.value[0]
-			var target_binds = sig.value[1]
-			var target_flags = sig.value[2]
-			node.connect(signal_name, target_component, target_name, target_binds, target_flags)
-		elif sig.change_type == 1:
-			var prev_target_name = sig.prev_value[0]
-			var target_name = sig.value[0]
-			var target_binds = sig.value[1]
-			var target_flags = sig.value[2]
-			node.disconnect(signal_name, target_component, prev_target_name)
-			node.connect(signal_name, target_component, target_name, target_binds, target_flags)
-		elif sig.change_type == 2:
-			var prev_target_name = sig.value[0]
-			node.disconnect(signal_name, target_component, prev_target_name)
+		
+		if sig.value is Dictionary:
+			var expression :Expression
+			var input_names :PoolStringArray 
+			
+			if sig.change_type < 2:
+				expression = Expression.new()
+				input_names = PoolStringArray(sig.value.args.value)
+				
+				input_names.insert(0, 'node')
+				
+				var err = expression.parse(sig.value.expression.value, input_names)
+				if err != OK:
+					push_error("A error occured when parsing lambda, error code: " + str(err))
+					push_error(expression.get_error_text())
+					continue
+			
+			if sig.change_type == 0:
+				node.connect(signal_name, self, "on_dynamic_signal", [{
+					"expression": expression,
+					"node": node,
+					"component": target_component
+				}])
+			elif sig.change_type == 1:
+				node.disconnect(signal_name, self, "on_dynamic_signal")
+				node.connect(signal_name, self, "on_dynamic_signal", [{
+					"expression": expression,
+					"node": node,
+					"component": target_component
+				}])
+			elif sig.change_type == 2:
+				node.disconnect(signal_name, self, "on_dynamic_signal")
+		else:
+			if sig.change_type == 0:
+				var target_name = sig.value[0]
+				var target_binds = sig.value[1]
+				var target_flags = sig.value[2]
+				node.connect(signal_name, target_component, target_name, target_binds, target_flags)
+			elif sig.change_type == 1:
+				var prev_target_name = sig.prev_value[0]
+				var target_name = sig.value[0]
+				var target_binds = sig.value[1]
+				var target_flags = sig.value[2]
+				node.disconnect(signal_name, target_component, prev_target_name)
+				node.connect(signal_name, target_component, target_name, target_binds, target_flags)
+			elif sig.change_type == 2:
+				var prev_target_name = sig.value[0]
+				node.disconnect(signal_name, target_component, prev_target_name)
 
 func _update_theme(node: Node, theme: Dictionary) -> void:
 	if not node is Control: return
@@ -489,6 +525,30 @@ func _property_transition(obj: Object, prop_name: String, transition_data: Trans
 			)
 	
 	_tw.start()
+
+func on_dynamic_signal(
+	a1 = null, a2 = null, a3 = null, a4 = null, a5 = null, a6 = null, a7 = null,
+	a8 = null, a9 = null, a10 = null, a11 = null, a12 = null, a13 = null, a14 = null, a15 = null
+) -> void:
+	var args := [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15]
+	
+	var i := 9
+	
+	while i >= 0:
+		if args[i] is Dictionary:
+			break
+		i -= 1
+	
+	var inputs = args.slice(0, i - 1)
+	var lambda_info = args[i]
+	
+	var e: Expression = lambda_info.expression
+	var node: Node = lambda_info.node
+	var component: Node = lambda_info.component
+	
+	var obj = e.execute([node] + inputs, component, true)
+	if e.has_execute_failed():
+		push_error("something bad happened")
 
 func get_class() -> String: return "ReactUI"
 
