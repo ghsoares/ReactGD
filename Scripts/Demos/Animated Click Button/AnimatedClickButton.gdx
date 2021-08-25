@@ -116,10 +116,6 @@ func render():
 
 	# In this case, we will pass a shake transition when the button was pressed,
 	# which makes a simple squish animation
-	var pressed_shake_scale = do_shake(
-		Vector2(1.1, 1.1), Vector2(1.0, 1.0), .2,
-		Tween.TRANS_QUAD, Tween.EASE_IN_OUT
-	)
 	# You can set transitions for each axis of a Vector2
 	var pressed_shake_scale_x = do_shake(
 		1.2, 1.0, .2, Tween.TRANS_QUAD, Tween.EASE_OUT
@@ -177,7 +173,11 @@ func render():
 				# preffix the name of the signal with 'on_',
 				# this tells the ReactTree
 				on_pressed = "on_button_click"
-				on_resized = "on_button_resized"
+
+				# (Really beta state) you can pass lambda functions to be executed
+				# on signal call, use `node` variable to reference to this node itself,
+				# in this case, the button
+				on_resized = func () => {node.set_pivot_offset(node.rect_size * 0.5)}
 
 				# Define the theme of the button
 				theme = theme.click_button

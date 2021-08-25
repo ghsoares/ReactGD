@@ -12,6 +12,8 @@ const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold
 const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
 const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
 
+const DEMO_FOLDER := "res://Scripts/Demos/Todo list/"
+
 # UI styling, I won't comment much here because
 # the syntax is gonna change too
 const style := {
@@ -53,11 +55,11 @@ const style := {
 	}
 }
 
-# Imports the necessary components on ready only
+# Imports the necessary components when script is initialized
 # (due to how gdscript works, cyclic dependency issue is very common,
 # so use `load` on onready vars to properly import classes)
-onready var InputField = load("res://Scripts/Demos/Todo list/TodoListInputField.gdx")
-onready var Task = load("res://Scripts/Demos/Todo list/TodoListTask.gdx")
+var InputField = load(DEMO_FOLDER + "TodoListInputField.gdx")
+var Task = load(DEMO_FOLDER + "TodoListTask.gdx")
 
 # A simple tree constructor, sets the tasks array state to a
 # empty array
