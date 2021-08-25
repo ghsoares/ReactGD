@@ -173,6 +173,7 @@ func _build_tree(prev_component: Node, render_state: Dictionary, path: String) -
 						signal_value += [[], 0]
 					elif signal_value.size() == 2:
 						signal_value += [0]
+				
 				node.signals[signal_name] = signal_value
 	
 	if node.instance.get_class() == "ReactComponent":
@@ -206,11 +207,26 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: in
 	var ref: Dictionary = tree.ref
 	var c_type: String = instance.value.get_class()
 	
+	# Set references
+	if instance.change_type == 0:
+		if ref.value != "":
+			root_component.set(ref.value, instance.value)
+	elif instance.change_type == 2:
+		if ref.value != "":
+			root_component.set(ref.value, null)
+	
+	# Set props, signals and theme
+	if props.change_type == 0 || props.change_type == 1:
+		_update_props(instance.value, props.value)
+	if signals.change_type == 0 || signals.change_type == 1:
+		_update_signals(root_component, instance.value, signals.value)
+	if theme.change_type == 0 || theme.change_type == 1:
+		_update_theme(instance.value, theme.value)
+	
+	# Instantiate or remove
 	if instance.change_type == 0:
 		parent.add_child(instance.value)
 		parent.move_child(instance.value, idx)
-		if ref.value != "":
-			root_component.set(ref.value, instance.value)
 	elif instance.change_type == 2:
 		parent.remove_child(instance.value)
 		_cached_nodes.erase(path.value)
@@ -222,18 +238,7 @@ func _iterate_tree(root_component: Node, parent: Node, tree: Dictionary, idx: in
 					_iterate_tree(instance.value, parent, c.value, 0)
 				else:
 					_iterate_tree(root_component, instance.value, c.value, 0)
-		if ref.value != "":
-			root_component.set(ref.value, null)
 		return
-	
-	if props.change_type == 0 || props.change_type == 1:
-		_update_props(instance.value, props.value)
-	
-	if signals.change_type == 0 || signals.change_type == 1:
-		_update_signals(root_component, instance.value, signals.value)
-	
-	if theme.change_type == 0 || theme.change_type == 1:
-		_update_theme(instance.value, theme.value)
 	
 	if children.change_type == 0 || children.change_type == 1:
 		var off = 0
