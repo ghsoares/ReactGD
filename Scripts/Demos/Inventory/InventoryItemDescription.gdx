@@ -1,0 +1,176 @@
+extends ReactComponent
+
+const font_jetbrains_regular := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
+const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold.ttf"
+const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
+const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
+const font_jetbrains_medium := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Medium.ttf"
+
+const style := {
+	"item_name": {
+		"fonts": {
+			"font": {
+				"size": 24.0,
+				"use_filter": true,
+				"src": font_jetbrains_extrabold
+			}
+		}
+	},
+	"item_description": {
+		"fonts": {
+			"normal_font": {
+				"size": 16.0,
+				"use_filter": true,
+				"src": font_jetbrains_medium
+			}
+		}
+	},
+	"separator": {
+		"styles": {
+			["separator", StyleBoxFlat]: {
+				"bg_color": Color("#ee4540"),
+				"corner_radius": 32.0,
+				"expand_margin_vertical": 1.0
+			},
+		}
+	}
+}
+
+func construct():
+	self.props.inventory.connect("item_selected", self, "on_item_selected")
+	self.state = {
+		"view_item": {},
+		"item": {},
+		"icon_anim": {},
+		"name_anim": {},
+		"description_anim": {}
+	}
+
+func on_item_selected(id, item):
+	if item.empty():
+		set_state({
+			"item": item,
+			"icon_anim": {
+				"scale_x": do_shake(
+					1.2, 0.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT
+				),
+				"scale_y": do_shake(
+					1.2, 0.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT, .1
+				),
+				"rot": do_shake(
+					rand_range(-30.0, 30.0), 0.0, .2,
+					Tween.TRANS_CUBIC, Tween.EASE_IN_OUT
+				)
+			},
+			"name_anim": {
+				"scale_x": do_shake(
+					1.2, 0.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT
+				),
+				"scale_y": do_shake(
+					1.2, 0.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT, .1
+				)
+			},
+			"description_anim": {
+				"scale_x": do_shake(
+					1.1, 0.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT
+				),
+				"scale_y": do_shake(
+					1.2, 0.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT, .1
+				)
+			}
+		})
+	else:
+		set_state({
+			"item": item,
+			"view_item": item,
+			"icon_anim": {
+				"scale_x": do_shake(
+					1.2, 1.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT
+				),
+				"scale_y": do_shake(
+					1.2, 1.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT, .1
+				),
+				"rot": do_shake(
+					rand_range(-30.0, 30.0), 0.0, .2,
+					Tween.TRANS_CUBIC, Tween.EASE_IN_OUT
+				)
+			},
+			"name_anim": {
+				"scale_x": do_shake(
+					1.2, 1.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT
+				),
+				"scale_y": do_shake(
+					1.2, 1.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT, .1
+				)
+			},
+			"description_anim": {
+				"scale_x": do_shake(
+					1.1, 1.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT
+				),
+				"scale_y": do_shake(
+					1.2, 1.0, .2, Tween.TRANS_CUBIC, Tween.EASE_OUT, .1
+				)
+			}
+		})
+
+func render():
+	var item = self.state.item
+	var view_item = self.state.view_item
+
+	var icon_scale_x = self.state.icon_anim.get("scale_x", 1.0)
+	var icon_scale_y = self.state.icon_anim.get("scale_y", 1.0)
+	var icon_rot = self.state.icon_anim.get("rot", 0.0)
+
+	var name_scale_x = self.state.name_anim.get("scale_x", 1.0)
+	var name_scale_y = self.state.name_anim.get("scale_y", 1.0)
+
+	var description_scale_x = self.state.description_anim.get("scale_x", 1.0)
+	var description_scale_y = self.state.description_anim.get("scale_y", 1.0)
+	
+	return (
+		<VBoxContainer
+			size_flags_horizontal=Control.SIZE_EXPAND_FILL
+			children=children
+		>
+			<HBoxContainer>
+				<TextureRect
+					rect_min_size=(Vector2(48, 48))
+					rect_pivot_offset=(Vector2(24, 24))
+
+					rect_scale:x = icon_scale_x
+					rect_scale:y = icon_scale_y
+					rect_rotation = icon_rot
+
+					texture=(view_item.get("icon", ""))
+					expand=true
+				/>
+				<Control rect_min_size=(Vector2(16.0, 0.0))/>
+				<Label
+					text = (view_item.get("name", ""))
+					theme = style.item_name
+
+					rect_scale:x = name_scale_x
+					rect_scale:y = name_scale_y
+
+					on_resized = func () => {node.set_pivot_offset(node.rect_size * .5)}
+				/>
+			</HBoxContainer>
+			<HSeparator
+				rect_min_size=(Vector2(0.0, 32.0))
+				theme=style.separator
+			/>
+			<RichTextLabel
+				bbcode_enabled=true
+				bbcode_text=(view_item.get("description", ""))
+				theme=style.item_description
+
+				fit_content_height = true
+
+				rect_scale:x = description_scale_x
+				rect_scale:y = description_scale_y
+
+				on_resized = func () => {node.set_pivot_offset(node.rect_size * .5)}
+			/>
+		</VBoxContainer>
+	)
+

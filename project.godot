@@ -9,6 +9,16 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Container",
+"class": "FlexGridContainer",
+"language": "GDScript",
+"path": "res://Scripts/FlexGridContainer.gd"
+}, {
+"base": "Node",
+"class": "Inventory",
+"language": "GDScript",
+"path": "res://Scripts/Demos/Inventory/Inventory.gd"
+}, {
 "base": "Node",
 "class": "ReactComponent",
 "language": "GDScript",
@@ -35,6 +45,8 @@ _global_script_classes=[ {
 "path": "res://addons/ReactGD/Classes/ReactUI.gd"
 } ]
 _global_script_class_icons={
+"FlexGridContainer": "",
+"Inventory": "",
 "ReactComponent": "",
 "ReactGDDictionaryMethods": "",
 "ReactGDTokenizer": "",
@@ -58,4 +70,5 @@ common/enable_pause_aware_picking=true
 [rendering]
 
 quality/driver/driver_name="GLES2"
+2d/snapping/use_gpu_pixel_snap=true
 environment/default_environment="res://default_env.tres"

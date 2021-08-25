@@ -1,0 +1,128 @@
+extends ReactUI
+
+const font_jetbrains_regular := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Regular.ttf"
+const font_jetbrains_bold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Bold.ttf"
+const font_jetbrains_light := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-Light.ttf"
+const font_jetbrains_extrabold := "res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf"
+
+const DEMO_FOLDER := "res://Scripts/Demos/Inventory/"
+
+var inventory: Inventory
+
+var Buttons = load(DEMO_FOLDER + "InventoryButtons.gdx")
+var Slots = load(DEMO_FOLDER + "InventorySlotsContainer.gdx")
+var Description = load(DEMO_FOLDER + "InventoryItemDescription.gdx")
+var TrashCan = load(DEMO_FOLDER + "InventoryTrashCan.gdx")
+
+const style := {
+	"container": {
+		"styles": {
+			["panel", StyleBoxFlat]: {
+				"bg_color": Color("#2d142c"),
+				"corner_radius": 32.0,
+				"content_margin": 32.0
+			},
+		}
+	},
+	"title": {
+		"fonts": {
+			"font": {
+				"size": 32,
+				"use_filter": true,
+				"src": font_jetbrains_extrabold
+			}
+		}
+	},
+	"separator": {
+		"styles": {
+			["separator", StyleBoxFlat]: {
+				"bg_color": Color("#ee4540"),
+				"corner_radius": 32.0,
+				"expand_margin_horizontal": 2.0
+			},
+		}
+	}
+}
+
+func construct() -> void:
+	inventory = Inventory.new()
+	inventory.size = 20
+	inventory.initialize()
+
+	self.state = {
+		"selected_item": -1,
+		"trash_anim": {}
+	}
+
+func on_add_slot() -> void:
+	inventory.resize(inventory.size + 1)
+
+func on_remove_slot() -> void:
+	inventory.resize(inventory.size - 1)
+
+func on_add_item(item: Dictionary) -> void:
+	inventory.add_item(item)
+
+func on_item_move(from: int, to: int) -> void:
+	inventory.move_item(from, to)
+
+func on_item_remove(id: int) -> void:
+	inventory.remove_item(id)
+
+func on_item_selected(id: int) -> void:
+	inventory.select_item(id)
+
+func render():
+	var selected_item = self.state.selected_item
+
+	return (
+		<HBoxContainer
+			anchor_left = 0.0
+			anchor_top = 0.0
+			anchor_right = 1.0
+			anchor_bottom = 1.0
+			margin_left = 16.0
+			margin_right = -16.0
+			margin_top = 16.0
+			margin_bottom = -16.0
+		>
+			<PanelContainer
+				size_flags_horizontal=Control.SIZE_EXPAND_FILL
+				theme=style.container
+			>
+				<HBoxContainer>
+					<VBoxContainer>
+						<Label
+							text="Inventory"
+							theme=style.title
+						/>
+						<Control rect_min_size=(Vector2(32.0, 0.0))/>
+						<Slots
+							name="Slots"
+							inventory=inventory
+							on_item_move="on_item_move"
+							on_item_selected="on_item_selected"
+						/>
+						<TrashCan
+							on_item_remove="on_item_remove"
+						/>
+					</VBoxContainer>
+					<VSeparator
+						rect_min_size=(Vector2(32.0, 0.0))
+						theme=style.separator
+					/>
+					<Description
+						inventory=inventory
+						selected_item=selected_item
+					/>
+				</HBoxContainer>
+			</PanelContainer>
+			<Control rect_min_size=(Vector2(32.0, 0.0))/>
+			<Buttons
+				on_add_item="on_add_item"
+				on_add_slot="on_add_slot"
+				on_remove_slot="on_remove_slot"
+			/>
+		</HBoxContainer>
+	)
+

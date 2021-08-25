@@ -1,0 +1,50 @@
+extends ReactComponent
+
+var Slot = load("res://Scripts/Demos/Inventory/InventorySlot.gdx")
+
+signal item_move(from, to)
+signal item_selected(id)
+
+func construct():
+	self.props.inventory.connect("inventory_resized", self, "on_inventory_resized")
+
+func on_item_move(from: int, to: int) -> void:
+	emit_signal("item_move", from, to)
+
+func on_inventory_resized(new_size: int) -> void:
+	set_state({})
+
+func on_slot_mouse_entered(id) -> void:
+	emit_signal("item_selected", id)
+
+func on_slot_mouse_exited(id) -> void:
+	emit_signal("item_selected", -1)
+
+func render():
+	var inventory = self.props.inventory
+	var children := []
+	
+	for i in range(inventory.size):
+		children.append((
+			<Slot
+				key=i
+				item_id=i
+				inventory=inventory
+				on_item_move="on_item_move"
+				on_mouse_entered="on_slot_mouse_entered"
+				on_mouse_exited="on_slot_mouse_exited"
+			/>
+		))
+
+	return (
+		<ScrollContainer
+			size_flags_vertical=Control.SIZE_EXPAND_FILL
+			scroll_horizontal_enabled=false
+		>
+			<FlexGridContainer
+				children_size=(Vector2(64.0, 64.0))
+				num_columns=5
+				children=children
+			/>
+		</ScrollContainer>
+	)
