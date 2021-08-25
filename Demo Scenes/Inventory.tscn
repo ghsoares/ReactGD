@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://Scripts/FlexGridContainer.gd" type="Script" id=1]
 [ext_resource path="res://Fonts/JetBrains/fonts/ttf/JetBrainsMono-ExtraBold.ttf" type="DynamicFontData" id=2]
@@ -133,79 +133,15 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="Animation" id=13]
-resource_name = "New Anim"
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:rect_position:x")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ Vector2( 0, 0 ) ]
-}
-
-[sub_resource type="Animation" id=14]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ Color( 1, 1, 1, 1 ) ]
-}
-tracks/1/type = "value"
-tracks/1/path = NodePath(".:rect_position")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ Vector2( 0, 0 ) ]
-}
-tracks/2/type = "bezier"
-tracks/2/path = NodePath(".:rect_position:x")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/keys = {
-"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
-"times": PoolRealArray( 0 )
-}
-tracks/3/type = "bezier"
-tracks/3/path = NodePath(".:rect_position:y")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/keys = {
-"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
-"times": PoolRealArray( 0 )
-}
-
 [node name="Inventory" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = 1024.0
-margin_bottom = 600.0
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": true
 }
 
-[node name="UI" type="HBoxContainer" parent="."]
+[node name="Prototype" type="HBoxContainer" parent="."]
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -217,7 +153,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="PanelContainer" type="PanelContainer" parent="UI"]
+[node name="PanelContainer" type="PanelContainer" parent="Prototype"]
 margin_right = 794.0
 margin_bottom = 568.0
 size_flags_horizontal = 3
@@ -226,37 +162,37 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HBox" type="HBoxContainer" parent="UI/PanelContainer"]
+[node name="HBox" type="HBoxContainer" parent="Prototype/PanelContainer"]
 margin_left = 32.0
 margin_top = 32.0
 margin_right = 762.0
 margin_bottom = 536.0
 
-[node name="VBox1" type="VBoxContainer" parent="UI/PanelContainer/HBox"]
+[node name="VBox1" type="VBoxContainer" parent="Prototype/PanelContainer/HBox"]
 margin_right = 384.0
 margin_bottom = 504.0
 custom_constants/separation = 0
 
-[node name="Title" type="Label" parent="UI/PanelContainer/HBox/VBox1"]
+[node name="Title" type="Label" parent="Prototype/PanelContainer/HBox/VBox1"]
 margin_right = 384.0
 margin_bottom = 43.0
 custom_fonts/font = SubResource( 2 )
 text = "Inventory"
 
-[node name="Control" type="Control" parent="UI/PanelContainer/HBox/VBox1"]
+[node name="Control" type="Control" parent="Prototype/PanelContainer/HBox/VBox1"]
 margin_top = 43.0
 margin_right = 384.0
 margin_bottom = 75.0
 rect_min_size = Vector2( 0, 32 )
 
-[node name="ScrollContainer" type="ScrollContainer" parent="UI/PanelContainer/HBox/VBox1"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Prototype/PanelContainer/HBox/VBox1"]
 margin_top = 75.0
 margin_right = 384.0
 margin_bottom = 440.0
 size_flags_vertical = 3
 scroll_horizontal_enabled = false
 
-[node name="FlexGridContainer" type="Container" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer"]
+[node name="FlexGridContainer" type="Container" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer"]
 margin_right = 384.0
 margin_bottom = 304.0
 script = ExtResource( 1 )
@@ -264,12 +200,12 @@ children_size = Vector2( 64, 64 )
 spacing = Vector2( 16, 16 )
 num_columns = 5
 
-[node name="Control" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_right = 64.0
 margin_bottom = 64.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -282,7 +218,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -298,13 +234,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control2" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control2" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 80.0
 margin_right = 144.0
 margin_bottom = 64.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control2"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control2"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 5 )
@@ -313,7 +249,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control2"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control2"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -329,13 +265,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control3" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control3" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 160.0
 margin_right = 224.0
 margin_bottom = 64.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control3"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control3"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -348,7 +284,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control3"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control3"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -364,13 +300,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control4" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control4" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 240.0
 margin_right = 304.0
 margin_bottom = 64.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control4"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control4"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -383,7 +319,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control4"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control4"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -399,13 +335,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control5" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control5" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 320.0
 margin_right = 384.0
 margin_bottom = 64.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control5"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control5"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -418,7 +354,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control5"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control5"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -434,13 +370,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control6" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control6" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_top = 80.0
 margin_right = 64.0
 margin_bottom = 144.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control6"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control6"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -453,7 +389,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control6"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control6"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -469,14 +405,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control7" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control7" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 80.0
 margin_top = 80.0
 margin_right = 144.0
 margin_bottom = 144.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control7"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control7"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -489,7 +425,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control7"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control7"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -505,14 +441,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control8" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control8" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 160.0
 margin_top = 80.0
 margin_right = 224.0
 margin_bottom = 144.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control8"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control8"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -525,7 +461,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control8"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control8"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -541,14 +477,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control9" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control9" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 240.0
 margin_top = 80.0
 margin_right = 304.0
 margin_bottom = 144.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control9"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control9"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -561,7 +497,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control9"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control9"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -577,14 +513,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control10" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control10" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 320.0
 margin_top = 80.0
 margin_right = 384.0
 margin_bottom = 144.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control10"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control10"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -597,7 +533,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control10"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control10"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -613,13 +549,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control11" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control11" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_top = 160.0
 margin_right = 64.0
 margin_bottom = 224.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control11"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control11"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -632,7 +568,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control11"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control11"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -648,14 +584,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control12" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control12" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 80.0
 margin_top = 160.0
 margin_right = 144.0
 margin_bottom = 224.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control12"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control12"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -668,7 +604,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control12"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control12"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -684,14 +620,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control13" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control13" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 160.0
 margin_top = 160.0
 margin_right = 224.0
 margin_bottom = 224.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control13"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control13"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -704,7 +640,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control13"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control13"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -720,14 +656,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control14" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control14" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 240.0
 margin_top = 160.0
 margin_right = 304.0
 margin_bottom = 224.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control14"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control14"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -740,7 +676,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control14"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control14"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -756,14 +692,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control15" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control15" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 320.0
 margin_top = 160.0
 margin_right = 384.0
 margin_bottom = 224.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control15"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control15"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -776,7 +712,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control15"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control15"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -792,13 +728,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control16" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control16" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_top = 240.0
 margin_right = 64.0
 margin_bottom = 304.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control16"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control16"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -811,7 +747,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control16"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control16"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -827,14 +763,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control17" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control17" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 80.0
 margin_top = 240.0
 margin_right = 144.0
 margin_bottom = 304.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control17"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control17"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -847,7 +783,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control17"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control17"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -863,14 +799,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control18" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control18" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 160.0
 margin_top = 240.0
 margin_right = 224.0
 margin_bottom = 304.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control18"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control18"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -883,7 +819,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control18"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control18"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -899,14 +835,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control19" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control19" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 240.0
 margin_top = 240.0
 margin_right = 304.0
 margin_bottom = 304.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control19"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control19"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -919,7 +855,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control19"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control19"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -935,14 +871,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control20" type="Panel" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
+[node name="Control20" type="Panel" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer"]
 margin_left = 320.0
 margin_top = 240.0
 margin_right = 384.0
 margin_bottom = 304.0
 custom_styles/panel = SubResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control20"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control20"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 2.0
@@ -955,7 +891,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Count" type="Label" parent="UI/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control20"]
+[node name="Count" type="Label" parent="Prototype/PanelContainer/HBox/VBox1/ScrollContainer/FlexGridContainer/Control20"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -971,7 +907,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Trash" type="TextureRect" parent="UI/PanelContainer/HBox/VBox1"]
+[node name="Trash" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox1"]
 modulate = Color( 0.788235, 0.164706, 0.258824, 1 )
 margin_left = 160.0
 margin_top = 440.0
@@ -981,29 +917,29 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 texture = ExtResource( 7 )
 
-[node name="VSeparator" type="VSeparator" parent="UI/PanelContainer/HBox"]
+[node name="VSeparator" type="VSeparator" parent="Prototype/PanelContainer/HBox"]
 margin_left = 388.0
 margin_right = 420.0
 margin_bottom = 504.0
 rect_min_size = Vector2( 32, 0 )
 custom_styles/separator = SubResource( 5 )
 
-[node name="VBox2" type="VBoxContainer" parent="UI/PanelContainer/HBox"]
+[node name="VBox2" type="VBoxContainer" parent="Prototype/PanelContainer/HBox"]
 margin_left = 424.0
 margin_right = 730.0
 margin_bottom = 504.0
 size_flags_horizontal = 3
 
-[node name="HBox" type="HBoxContainer" parent="UI/PanelContainer/HBox/VBox2"]
+[node name="HBox" type="HBoxContainer" parent="Prototype/PanelContainer/HBox/VBox2"]
 margin_right = 306.0
 margin_bottom = 48.0
 
-[node name="Control2" type="Control" parent="UI/PanelContainer/HBox/VBox2/HBox"]
+[node name="Control2" type="Control" parent="Prototype/PanelContainer/HBox/VBox2/HBox"]
 margin_right = 48.0
 margin_bottom = 48.0
 rect_min_size = Vector2( 48, 48 )
 
-[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBox/VBox2/HBox/Control2"]
+[node name="TextureRect" type="TextureRect" parent="Prototype/PanelContainer/HBox/VBox2/HBox/Control2"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 5 )
@@ -1012,13 +948,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Control" type="Control" parent="UI/PanelContainer/HBox/VBox2/HBox"]
+[node name="Control" type="Control" parent="Prototype/PanelContainer/HBox/VBox2/HBox"]
 margin_left = 52.0
 margin_right = 68.0
 margin_bottom = 48.0
 rect_min_size = Vector2( 16, 0 )
 
-[node name="ItemName" type="Label" parent="UI/PanelContainer/HBox/VBox2/HBox"]
+[node name="ItemName" type="Label" parent="Prototype/PanelContainer/HBox/VBox2/HBox"]
 margin_left = 72.0
 margin_top = 7.0
 margin_right = 306.0
@@ -1028,14 +964,14 @@ custom_fonts/font = SubResource( 6 )
 text = "Item name"
 autowrap = true
 
-[node name="Control" type="HSeparator" parent="UI/PanelContainer/HBox/VBox2"]
+[node name="Control" type="HSeparator" parent="Prototype/PanelContainer/HBox/VBox2"]
 margin_top = 52.0
 margin_right = 306.0
 margin_bottom = 84.0
 rect_min_size = Vector2( 0, 32 )
 custom_styles/separator = SubResource( 7 )
 
-[node name="RichTextLabel" type="RichTextLabel" parent="UI/PanelContainer/HBox/VBox2"]
+[node name="RichTextLabel" type="RichTextLabel" parent="Prototype/PanelContainer/HBox/VBox2"]
 margin_top = 88.0
 margin_right = 306.0
 margin_bottom = 134.0
@@ -1051,13 +987,13 @@ text = "A simple rock...
 Adds +1 attack"
 fit_content_height = true
 
-[node name="Control" type="Control" parent="UI"]
+[node name="Control" type="Control" parent="Prototype"]
 margin_left = 798.0
 margin_right = 814.0
 margin_bottom = 568.0
 rect_min_size = Vector2( 16, 0 )
 
-[node name="PanelContainer2" type="PanelContainer" parent="UI"]
+[node name="PanelContainer2" type="PanelContainer" parent="Prototype"]
 margin_left = 818.0
 margin_right = 992.0
 margin_bottom = 568.0
@@ -1066,13 +1002,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="VBox" type="VBoxContainer" parent="UI/PanelContainer2"]
+[node name="VBox" type="VBoxContainer" parent="Prototype/PanelContainer2"]
 margin_left = 16.0
 margin_top = 16.0
 margin_right = 158.0
 margin_bottom = 552.0
 
-[node name="Button1" type="Button" parent="UI/PanelContainer2/VBox"]
+[node name="Button1" type="Button" parent="Prototype/PanelContainer2/VBox"]
 margin_right = 142.0
 margin_bottom = 30.0
 rect_pivot_offset = Vector2( 71, 15 )
@@ -1082,34 +1018,30 @@ custom_styles/pressed = SubResource( 10 )
 custom_styles/normal = SubResource( 11 )
 text = "+1 slot"
 
-[node name="Button2" type="Button" parent="UI/PanelContainer2/VBox"]
+[node name="Button2" type="Button" parent="Prototype/PanelContainer2/VBox"]
 margin_top = 34.0
 margin_right = 142.0
 margin_bottom = 62.0
 custom_fonts/font = SubResource( 12 )
 text = "-1 slot"
 
-[node name="Button3" type="Button" parent="UI/PanelContainer2/VBox"]
+[node name="Button3" type="Button" parent="Prototype/PanelContainer2/VBox"]
 margin_top = 66.0
 margin_right = 142.0
 margin_bottom = 94.0
 custom_fonts/font = SubResource( 12 )
 text = "Add a rock"
 
-[node name="Button4" type="Button" parent="UI/PanelContainer2/VBox"]
+[node name="Button4" type="Button" parent="Prototype/PanelContainer2/VBox"]
 margin_top = 98.0
 margin_right = 142.0
 margin_bottom = 126.0
 custom_fonts/font = SubResource( 12 )
 text = "Add a stick"
 
-[node name="Button5" type="Button" parent="UI/PanelContainer2/VBox"]
+[node name="Button5" type="Button" parent="Prototype/PanelContainer2/VBox"]
 margin_top = 130.0
 margin_right = 142.0
 margin_bottom = 158.0
 custom_fonts/font = SubResource( 12 )
 text = "Add a pickaxe"
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-"anims/New Anim" = SubResource( 13 )
-anims/RESET = SubResource( 14 )
