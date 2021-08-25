@@ -70,10 +70,7 @@ static func path_get(dict: Dictionary, path: String, first_is_root: bool = false
 static func merge_dict(dictA: Dictionary, dictB: Dictionary) -> void:
 	for key in dictB:
 		if dictA.has(key):
-			if dictA[key] is Dictionary:
-				merge_dict(dictA[key], dictB[key])
-			else:
-				dictA[key] = dictB[key]
+			dictA[key] = dictB[key]
 		else:
 			dictA[key] = dictB[key]
 
@@ -122,7 +119,7 @@ static func compute_diff(objA, objB) -> Dictionary:
 				else:
 					diff[k] = {
 						"change_type": DIFF_TYPE.DIFF_UNCHANGED,
-						"value": compute_diff(objA[k], objB[k])
+						"value": objB[k]
 					}
 			else:
 				if typeof(objA[k]) != typeof(objB[k]) || objA[k] != objB[k]:
