@@ -18,10 +18,10 @@ class ReactGDComponent : public Node {
 		static void _register_methods();
 
 		// Class properties
-		String* 			id;
-		String* 			cached_path;
-		Dictionary* 		state;
-		Dictionary* 		props;
+		godot_string 		id;
+		godot_string 		cached_path;
+		godot_dictionary	state;
+		godot_dictionary 	props;
 		ReactGDComponent* 	parent_component;
 		
 		/*
@@ -51,9 +51,9 @@ class ReactGDComponent : public Node {
 		void _process(float delta);
 
 		// Class methods
-		void set_state(Dictionary new_state);
+		void set_state(godot_dictionary new_state);
 		void construct();
-		virtual Dictionary render();
+		virtual godot_dictionary render();
 };
 }
 

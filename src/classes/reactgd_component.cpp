@@ -26,8 +26,8 @@ void ReactGDComponent::_process(float delta) {
 void ReactGDComponent::_render_process(float delta) {
 	if (!this->_dirty) return;
 
-	Dictionary new_render_state = this->render();
-	Godot::print(new_render_state.to_json());
+	godot_dictionary new_render_state = this->render();
+	godot_print(&godot_dictionary_to_json(&new_render_state));
 
 	this->_dirty = false;
 }
