@@ -8,6 +8,16 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Node",
+"class": "DictionaryMethods",
+"language": "GDScript",
+"path": "res://scripts/dictionary_methods.gd"
+} ]
+_global_script_class_icons={
+"DictionaryMethods": ""
+}
+
 [application]
 
 config/name="ReactGD"
@@ -15,7 +25,7 @@ config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/ReactGD/plugin.cfg" )
+enabled=PoolStringArray(  )
 
 [physics]
 
