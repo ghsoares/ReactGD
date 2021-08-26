@@ -8,46 +8,6 @@
 
 config_version=4
 
-_global_script_classes=[ {
-"base": "Node",
-"class": "ReactComponent",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Classes/ReactComponent.gd"
-}, {
-"base": "Node",
-"class": "ReactGDDictionaryMethods",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Utility/ReactGDDictionaryMethods.gd"
-}, {
-"base": "Reference",
-"class": "ReactGDTokenizer",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Utility/ReactGDTokenizer.gd"
-}, {
-"base": "Node",
-"class": "ReactGDXParser",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Utility/ReactGDXParser.gd"
-}, {
-"base": "Node",
-"class": "ReactTransition",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Classes/ReactTransition.gd"
-}, {
-"base": "Control",
-"class": "ReactUI",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Classes/ReactUI.gd"
-} ]
-_global_script_class_icons={
-"ReactComponent": "",
-"ReactGDDictionaryMethods": "",
-"ReactGDTokenizer": "",
-"ReactGDXParser": "",
-"ReactTransition": "",
-"ReactUI": ""
-}
-
 [application]
 
 config/name="ReactGD"
