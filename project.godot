@@ -10,12 +10,24 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Node",
-"class": "DictionaryMethods",
+"class": "ReactGDComponent",
 "language": "GDScript",
-"path": "res://scripts/dictionary_methods.gd"
+"path": "res://addons/react-gd/classes/ReactGDComponent.gd"
+}, {
+"base": "Node",
+"class": "ReactGDDictionaryMethods",
+"language": "GDScript",
+"path": "res://addons/react-gd/Utility/ReactGDDictionaryMethods.gd"
+}, {
+"base": "Node",
+"class": "ReactGDTransition",
+"language": "GDScript",
+"path": "res://addons/react-gd/classes/ReactGDTransition.gd"
 } ]
 _global_script_class_icons={
-"DictionaryMethods": ""
+"ReactGDComponent": "",
+"ReactGDDictionaryMethods": "",
+"ReactGDTransition": ""
 }
 
 [application]
