@@ -72,7 +72,7 @@ func punch(
 	return self
 
 func shake(
-	peak_value1, peak_value2, final_value, cycles: int, duration: float, prop: String = "",
+	peak_value1, peak_value2, final_value, cycles: int, fade_curve: float, duration: float, prop: String = "",
 	trans_type: int = 0, ease_type: int = 0
 ):
 	if prop != "" and not prop in _props:
@@ -80,25 +80,20 @@ func shake(
 	
 	var spacing := duration / (cycles + 1)
 	var inverted := false
-	for i in range(cycles):
+	
+	for i in range(cycles + 1):
+		var t = float(i) / cycles
+		var peak = peak_value2 if inverted else peak_value1
 		_frames.append({
 			"prop": prop,
 			"time": _prev_time + spacing * i,
-			"final_value": peak_value2 if inverted else peak_value1,
+			"final_value": lerp(peak, final_value, t),
 			"duration": spacing,
 			"trans_type": trans_type,
 			"ease_type": ease_type
 		})
 		inverted = !inverted
 	
-	_frames.append({
-		"prop": prop,
-		"time": _prev_time + spacing * cycles,
-		"final_value": final_value,
-		"duration": spacing,
-		"trans_type": trans_type,
-		"ease_type": ease_type
-	})
 	_current_time += duration
 	_prev_time = _current_time
 	return self
