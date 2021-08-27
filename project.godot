@@ -17,7 +17,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "ReactGDDictionaryMethods",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDDictionaryMethods.gd"
+"path": "res://addons/react-gd/utility/ReactGDDictionaryMethods.gd"
 }, {
 "base": "Node",
 "class": "ReactGDTransition",
