@@ -18,7 +18,6 @@ var state: Dictionary
 var children: Dictionary
 
 func _init() -> void:
-	_dirty = true
 	_render_state = {}
 	_cached_nodes = {}
 
@@ -27,6 +26,7 @@ func _enter_tree() -> void:
 	add_child(_tw)
 	state = {}
 	construct()
+	_render_process()
 
 func _process(delta: float) -> void:
 	if _dirty:
@@ -80,8 +80,12 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 				}
 			}
 	
-	for c in children:
-		children[c] = _build_component(children[c], cached_path + "_")
+	if node.instance.get_class() == "ReactGDComponent":
+		node.instance.children = children
+		children = {}
+	else:
+		for c in children:
+			children[c] = _build_component(children[c], cached_path + "_")
 	
 	node.props = props
 	node.children = children
@@ -144,6 +148,7 @@ func _update_node_props(node: Node, props: Dictionary) -> void:
 
 func _update_transition(node: Node, prop_name: String, transition_data: Dictionary) -> void:
 	if transition_data.change_type == DIFF_TYPE.DIFF_REMOVED: return
+	_tw.stop(node, prop_name)
 	
 	var frames: Array = transition_data.value.frames.value
 	var prop_names: Array = transition_data.value.props.value
@@ -152,9 +157,29 @@ func _update_transition(node: Node, prop_name: String, transition_data: Dictiona
 		prop_name: node.get_indexed(prop_name)
 	}
 	for p_name in prop_names:
-		prop_values[p_name] = node.get_indexed(prop_name + ":" + p_name)
+		if p_name != "":
+			prop_values[prop_name + p_name] = node.get_indexed(prop_name + p_name)
+			_tw.stop(node, prop_name + p_name)
 	
 	frames.sort_custom(ReactGDTransition, "sort_frames")
+	
+	for frame in frames:
+		var p_name: String = prop_name + frame.prop
+		var start_value = prop_values[p_name]
+		var final_value = frame.final_value
+		var time: float = frame.time
+		var duration: float = frame.duration
+		var trans_type: int = frame.trans_type
+		var ease_type: int = frame.ease_type
+		
+		_tw.interpolate_property(
+			node, p_name, start_value, final_value, duration, trans_type, ease_type,
+			time
+		)
+		
+		prop_values[p_name] = final_value
+	
+	_tw.start()
 
 func _update_node_signal(node: Node, signal_name: String, signal_data: Dictionary) -> void:
 	var target_node: Node = self
