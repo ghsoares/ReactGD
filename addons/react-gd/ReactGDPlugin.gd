@@ -1,8 +1,13 @@
 tool
 extends EditorPlugin
 
-func _enter_tree() -> void:
-	pass
 
-func _exit_tree() -> void:
-	pass
+var import_plugin
+
+func _enter_tree():
+	import_plugin = preload("ReactGDImportPlugin.gd").new()
+	add_import_plugin(import_plugin)
+
+func _exit_tree():
+	remove_import_plugin(import_plugin)
+	import_plugin = null

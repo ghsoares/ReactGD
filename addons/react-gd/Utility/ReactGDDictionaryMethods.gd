@@ -9,6 +9,61 @@ enum DIFF_TYPE {
 	DIFF_UNCHANGED = 3
 }
 
+static func unfold_string(s: String, indent_str: String, start_indent: int = 0) -> String:
+	var tokenizer := ReactGDTokenizer.new()
+	tokenizer.add_token("char", ".")
+	tokenizer.add_token("array_open", "\\[")
+	tokenizer.add_token("array_close", "\\]")
+	tokenizer.add_token("dict_open", "\\{")
+	tokenizer.add_token("dict_close", "\\}")
+	tokenizer.add_token("comma", ",")
+	tokenizer.add_token("string", "\"[^\"]*\"")
+	tokenizer.add_token("par_open", "\\(")
+	tokenizer.add_token("par_close", "\\)")
+	
+	var tokens := tokenizer.tokenize(s)
+	var num_tokens := tokens.size()
+	
+	var i := 0
+	var res := ""
+	var indent := start_indent
+	var ignore := 0
+	
+	while i < num_tokens:
+		var val: String = tokens[i].match.get_string()
+		
+		if tokens[i].name == "par_open":
+			ignore += 1
+		if tokens[i].name == "par_close":
+			ignore -= 1
+		
+		if ignore == 0:
+			match tokens[i].name:
+				"dict_open", "array_open":
+					indent += 1
+					res += val.lstrip(" ").rstrip(" ") + "\n"
+					res += indent_str.repeat(indent)
+				"dict_close", "array_close":
+					indent -= 1
+					res += "\n" + indent_str.repeat(indent) + val.lstrip(" ").rstrip(" ")
+				"comma":
+					res += val.lstrip(" ").rstrip(" ") + "\n"
+					res += indent_str.repeat(indent)
+				_:
+					if val == " ":
+						res += val
+					else:
+						res += val.lstrip(" ").rstrip(" ")
+		else:
+			if val == " ":
+				res += val
+			else:
+				res += val.lstrip(" ").rstrip(" ")
+		
+		i += 1
+	
+	return res
+
 static func diff(objA: Dictionary, objB: Dictionary):
 	var res := {}
 	
