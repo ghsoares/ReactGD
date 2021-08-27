@@ -17,17 +17,29 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "ReactGDDictionaryMethods",
 "language": "GDScript",
-"path": "res://addons/react-gd/utility/ReactGDDictionaryMethods.gd"
+"path": "res://addons/react-gd/Utility/ReactGDDictionaryMethods.gd"
+}, {
+"base": "Reference",
+"class": "ReactGDTokenizer",
+"language": "GDScript",
+"path": "res://addons/react-gd/Utility/ReactGDTokenizer.gd"
 }, {
 "base": "Object",
 "class": "ReactGDTransition",
 "language": "GDScript",
 "path": "res://addons/react-gd/classes/ReactGDTransition.gd"
+}, {
+"base": "Node",
+"class": "ReactGDXParser",
+"language": "GDScript",
+"path": "res://addons/react-gd/Utility/ReactGDXParser.gd"
 } ]
 _global_script_class_icons={
 "ReactGDComponent": "",
 "ReactGDDictionaryMethods": "",
-"ReactGDTransition": ""
+"ReactGDTokenizer": "",
+"ReactGDTransition": "",
+"ReactGDXParser": ""
 }
 
 [application]
@@ -37,7 +49,7 @@ config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray(  )
+enabled=PoolStringArray( "res://addons/react-gd/plugin.cfg" )
 
 [physics]
 
