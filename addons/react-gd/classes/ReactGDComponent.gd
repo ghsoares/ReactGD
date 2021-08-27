@@ -15,6 +15,7 @@ var _cached_nodes: Dictionary
 var _tw: Tween
 var parent_component: Node
 var state: Dictionary
+var events: Dictionary
 var children: Dictionary
 
 func _init() -> void:
@@ -24,7 +25,10 @@ func _init() -> void:
 func _enter_tree() -> void:
 	_tw = Tween.new()
 	add_child(_tw)
+	
 	state = {}
+	events = {}
+	
 	construct()
 	_render_process()
 
@@ -50,6 +54,9 @@ func _render_process() -> void:
 			_update_tree(render_diff, self, 0)
 		
 		_render_state = new_render_state
+	
+	for ev in events.keys():
+		events[ev] = false
 
 func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 	var node :Dictionary = {}
@@ -148,14 +155,19 @@ func _update_node_props(node: Node, props: Dictionary) -> void:
 
 func _update_transition(node: Node, prop_name: String, transition_data: Dictionary) -> void:
 	if transition_data.change_type == DIFF_TYPE.DIFF_REMOVED: return
-	_tw.stop(node, prop_name)
 	
 	var frames: Array = transition_data.value.frames.value
 	var prop_names: Array = transition_data.value.props.value
+	var prop_values: Dictionary = {}
 	
-	var prop_values: Dictionary = {
-		prop_name: node.get_indexed(prop_name)
-	}
+	if prop_name == "transition":
+		prop_name = ""
+	else:
+		_tw.stop(node, prop_name)
+		prop_values = {
+			prop_name: node.get_indexed(prop_name)
+		}
+	
 	for p_name in prop_names:
 		if p_name != "":
 			prop_values[prop_name + p_name] = node.get_indexed(prop_name + p_name)
@@ -220,6 +232,10 @@ func do_transition() -> ReactGDTransition:
 func set_state(new_state: Dictionary) -> void:
 	for state_key in new_state.keys():
 		state[state_key] = new_state[state_key]
+	_dirty = true
+
+func trigger_event(event_name: String, val: bool = true) -> void:
+	events[event_name] = val
 	_dirty = true
 
 func construct() -> void: pass
