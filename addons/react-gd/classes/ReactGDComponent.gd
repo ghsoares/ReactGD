@@ -61,6 +61,10 @@ func _render_process() -> void:
 		events[ev] = false
 
 func _build_component(render_state: Dictionary, path: String) -> Dictionary:
+	var props: Dictionary = render_state.get("props", {})
+	var children: Array = render_state.get("children", [])
+	render_state.id += str(props.get("key", ""))
+	
 	var node :Dictionary = {}
 	var cached_path :String = path + render_state.id
 	
@@ -78,8 +82,6 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 		}
 		_cached_nodes[cached_path] = node.instance
 	
-	var props: Dictionary = render_state.get("props", {})
-	var children: Array = render_state.get("children", [])
 	var dict_children := {}
 	
 	for prop_name in props:
