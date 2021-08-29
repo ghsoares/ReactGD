@@ -289,22 +289,14 @@ func _parse_gdx(code: String, indent: int) -> String:
 
 func parse(code: String) -> String:
 	var tokenizer := ReactGDTokenizer.new()
-	# Any kind of symbol accessor, like self, self.foo, something, etc.
 	tokenizer.add_token("symbol", '[\\w.:]+')
-	# Comment line
 	tokenizer.add_token("comment", '#.*')
 	tokenizer.add_ignore_token("comment")
-	# Single line strings like "a string"
 	tokenizer.add_token("string", '"[^"]*"')
-	# Multiple line strings like
-	# """A text
-	# about apples"""
 	tokenizer.add_token("multiline_string", '"""[^"""]*"""')
 	tokenizer.add_token("tag_open", '<')
 	tokenizer.add_token("tag_close", '>')
-	# Open parentheses
 	tokenizer.add_token("par_open", '\\(')
-	# Close parentheses
 	tokenizer.add_token("par_close", '\\)')
 	
 	while true:
