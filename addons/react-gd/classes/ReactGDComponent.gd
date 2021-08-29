@@ -72,13 +72,15 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 		node = {
 			"cached_path": cached_path,
 			"instance": _cached_nodes[cached_path],
-			"persist": false
+			"persist": false,
+			"ref": ""
 		}
 	else:
 		node = {
 			"cached_path": cached_path,
 			"instance": render_state.type.new(),
-			"persist": false
+			"persist": false,
+			"ref": ""
 		}
 		_cached_nodes[cached_path] = node.instance
 	
@@ -95,6 +97,8 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 			}
 		elif prop_name == "persist":
 			node.persist = props[prop_name]
+		elif prop_name == "ref":
+			node.ref = props[prop_name]
 	
 	if node.instance.get_class() == "ReactGDComponent":
 		node.instance.children = children
@@ -134,6 +138,7 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 	var node_change_type: int = render_diff.instance.change_type
 	var node: Node = render_diff.instance.value
 	var persist: bool = render_diff.persist.value
+	var ref: String = render_diff.ref.value
 	
 	if node_change_type != DIFF_TYPE.DIFF_REMOVED:
 		var props_change_type: int = render_diff.props.change_type
@@ -148,11 +153,15 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 			node.parent_component = self
 		parent.add_child(node, true)
 		parent.move_child(node, index)
+		if ref != "":
+			self.set_indexed(ref, node)
 	elif node_change_type == DIFF_TYPE.DIFF_REMOVED:
 		parent.remove_child(node)
 		if not persist:
 			_cached_nodes.erase(cached_path)
 			node.queue_free()
+			if ref != "":
+				self.set_indexed(ref, null)
 		return
 	
 	var children_change_type: int = render_diff.children.change_type
