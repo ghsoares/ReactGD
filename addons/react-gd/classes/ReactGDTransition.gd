@@ -9,13 +9,14 @@ var _velocity: float
 var _current_time: float
 var _prev_time: float
 
-func _init() -> void:
+func _init(commands: Array = []) -> void:
 	_frames = []
 	_props = []
 	_hash = 0
 	_velocity = 1.0
 	_current_time = 0.0
 	_prev_time = 0.0
+	from_commands(commands)
 
 func from_commands(commands: Array):
 	for command in commands:
@@ -27,8 +28,7 @@ func from_commands(commands: Array):
 			"time": _time(command.value)
 			"append": _append(command.value)
 			"velocity": _velocity(command.value)
-			"one_shot": _one_shot(command.value)
-	return self
+			"persist": _persist(command.value)
 
 func _go_to(data: Dictionary):
 	var target = data.target
@@ -134,11 +134,11 @@ func _append(time: float):
 func _velocity(vel: float):
 	self._velocity = vel
 
-func _one_shot(enable: bool):
+func _persist(enable: bool):
 	# Even when a transition property don't change, 
 	# you can set it to persist based on another value,
 	# so it always plays on render
-	if !enable:
+	if enable:
 		_hash = OS.get_ticks_msec()
 	else:
 		_hash = 0

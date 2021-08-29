@@ -50,10 +50,15 @@ func import(source_file: String, save_path: String, options, platform_variants, 
 	var script := GDScript.new()
 	var source = file.get_as_text()
 	
-	var parser := ReactGDXParser.new()
-	parser.unfold_blocks = options.unfold_blocks
+	var GDX_parser := ReactGDXParser.new()
+	GDX_parser.sed = source_file
+	var transition_parser := ReactGDTransitionParser.new()
+	GDX_parser.unfold_blocks = options.unfold_blocks
 	
-	source = parser.parse(source)
+	# First parse transitions
+	source = GDX_parser.parse(source)
+	# Secondly, parse GDX
+	source = transition_parser.parse(source)
 	
 	script.source_code = source
 	

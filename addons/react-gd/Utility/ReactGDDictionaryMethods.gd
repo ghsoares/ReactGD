@@ -9,59 +9,35 @@ enum DIFF_TYPE {
 	DIFF_UNCHANGED = 3
 }
 
-static func unfold_string(s: String, indent_str: String, start_indent: int = 0) -> String:
-	var tokenizer := ReactGDTokenizer.new()
-	tokenizer.add_token("char", ".")
-	tokenizer.add_token("array_open", "\\[")
-	tokenizer.add_token("array_close", "\\]")
-	tokenizer.add_token("dict_open", "\\{")
-	tokenizer.add_token("dict_close", "\\}")
-	tokenizer.add_token("comma", ",")
-	tokenizer.add_token("string", "\"[^\"]*\"")
-	tokenizer.add_token("par_open", "\\(")
-	tokenizer.add_token("par_close", "\\)")
-	
-	var tokens := tokenizer.tokenize(s)
-	var num_tokens := tokens.size()
-	
-	var i := 0
+"""
+This function returns a string literal of a Dictionary,
+instead of a json like JSON.print does
+"""
+static func stringify(obj, indent: String = " ", curr_indent: int = 0) -> String:
 	var res := ""
-	var indent := start_indent
-	var ignore := 0
-	
-	while i < num_tokens:
-		var val: String = tokens[i].match.get_string()
-		
-		if tokens[i].name == "par_open":
-			ignore += 1
-		if tokens[i].name == "par_close":
-			ignore -= 1
-		
-		if ignore == 0:
-			match tokens[i].name:
-				"dict_open", "array_open":
-					indent += 1
-					res += val.lstrip(" ").rstrip(" ") + "\n"
-					res += indent_str.repeat(indent)
-				"dict_close", "array_close":
-					indent -= 1
-					res += "\n" + indent_str.repeat(indent) + val.lstrip(" ").rstrip(" ")
-				"comma":
-					res += val.lstrip(" ").rstrip(" ") + "\n"
-					res += indent_str.repeat(indent)
-				_:
-					if val == " ":
-						res += val
-					else:
-						res += val.lstrip(" ").rstrip(" ")
-		else:
-			if val == " ":
-				res += val
+	if obj is Array:
+		res += "["
+		for val in obj:
+			res += "\n" + indent.repeat(curr_indent)
+			if val is Array or val is Dictionary:
+				res += stringify(val, indent, curr_indent + 1) + ","
 			else:
-				res += val.lstrip(" ").rstrip(" ")
-		
-		i += 1
-	
+				res += str(val) + ","
+		if !obj.empty():
+			res += "\n" + indent.repeat(curr_indent - 1)
+		res += "]"
+	elif obj is Dictionary:
+		res += "{"
+		for k in obj.keys():
+			var val = obj[k]
+			res += "\n" + indent.repeat(curr_indent) + str(k) + ": "
+			if val is Array or val is Dictionary:
+				res += stringify(val, indent, curr_indent + 1) + ","
+			else:
+				res += str(val) + ","
+		if !obj.empty():
+			res += "\n" + indent.repeat(curr_indent - 1)
+		res += "}"
 	return res
 
 static func diff(objA: Dictionary, objB: Dictionary):
@@ -125,45 +101,3 @@ static func diff(objA: Dictionary, objB: Dictionary):
 					}
 	
 	return res
-
-static func dest_diff(diff: Dictionary) -> Dictionary:
-	if diff.change_type == DIFF_TYPE.DIFF_UNCHANGED:
-		return diff
-	
-	if not diff.value is Dictionary:
-		return diff.value
-	
-	var res := {}
-	for k in diff.value.keys():
-		if diff.value[k].change_type == DIFF_TYPE.DIFF_UNCHANGED:
-			res[k] = diff.value[k]
-		else:
-			if diff.value[k] is Dictionary:
-				res[k] = dest_diff(diff.value[k])
-			else:
-				res[k] = diff.value[k].value
-	
-	return res
-
-"""
-def dd(d1, d2, ctx=""):
-	print "Changes in " + ctx
-	for k in d1:
-		if k not in d2:
-			print k + " removed from d2"
-	for k in d2:
-		if k not in d1:
-			print k + " added in d2"
-			continue
-		if d2[k] != d1[k]:
-			if type(d2[k]) not in (dict, list):
-				print k + " changed in d2 to " + str(d2[k])
-			else:
-				if type(d1[k]) != type(d2[k]):
-					print k + " changed to " + str(d2[k])
-					continue
-				else:
-					if type(d2[k]) == dict:
-						dd(d1[k], d2[k], k)
-						continue
-"""

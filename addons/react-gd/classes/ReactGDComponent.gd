@@ -22,7 +22,7 @@ func _init() -> void:
 	_render_state = {}
 	_cached_nodes = {}
 
-func _enter_tree() -> void:
+func _ready() -> void:
 	_tw = Tween.new()
 	add_child(_tw)
 	
@@ -30,7 +30,9 @@ func _enter_tree() -> void:
 	events = {}
 	
 	construct()
-	_render_process()
+
+func _enter_tree() -> void:
+	_dirty = true
 
 func _process(delta: float) -> void:
 	if _dirty:
@@ -65,17 +67,20 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 	if _cached_nodes.has(cached_path):
 		node = {
 			"cached_path": cached_path,
-			"instance": _cached_nodes[cached_path]
+			"instance": _cached_nodes[cached_path],
+			"persist": false
 		}
 	else:
 		node = {
 			"cached_path": cached_path,
-			"instance": render_state.type.new()
+			"instance": render_state.type.new(),
+			"persist": false
 		}
 		_cached_nodes[cached_path] = node.instance
 	
 	var props: Dictionary = render_state.get("props", {})
-	var children: Dictionary = render_state.get("children", {})
+	var children: Array = render_state.get("children", [])
+	var dict_children := {}
 	
 	for prop_name in props:
 		if props[prop_name] is ReactGDTransition:
@@ -86,22 +91,47 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 					"hash": props[prop_name]._hash
 				}
 			}
+		elif prop_name == "persist":
+			node.persist = props[prop_name]
 	
 	if node.instance.get_class() == "ReactGDComponent":
 		node.instance.children = children
-		children = {}
+		children = []
 	else:
-		for c in children:
-			children[c] = _build_component(children[c], cached_path + "_")
+		var prev_conditional_true := false
+		var new_children := {}
+		for child in children:
+			if child.type is String:
+				if child.type == "If":
+					prev_conditional_true = child.props.conditional
+					if prev_conditional_true:
+						for n_child in child.children:
+							new_children[n_child.id] = _build_component(n_child, cached_path + "_")
+				
+				elif child.type == "Elif":
+					if prev_conditional_true: continue
+					prev_conditional_true = child.props.conditional
+					if prev_conditional_true:
+						for n_child in child.children:
+							new_children[n_child.id] = _build_component(n_child, cached_path + "_")
+				
+				elif child.type == "Else":
+					if prev_conditional_true: continue
+					for n_child in child.children:
+						new_children[n_child.id] = _build_component(n_child, cached_path + "_")
+			else:
+				new_children[child.id] = _build_component(child, cached_path + "_")
+		node.children = new_children
 	
 	node.props = props
-	node.children = children
+	#node.children = children
 	return node
 
 func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 	var cached_path: String = render_diff.cached_path.value
 	var node_change_type: int = render_diff.instance.change_type
 	var node: Node = render_diff.instance.value
+	var persist: bool = render_diff.persist.value
 	
 	if node_change_type != DIFF_TYPE.DIFF_REMOVED:
 		var props_change_type: int = render_diff.props.change_type
@@ -118,7 +148,9 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 		parent.move_child(node, index)
 	elif node_change_type == DIFF_TYPE.DIFF_REMOVED:
 		parent.remove_child(node)
-		_cached_nodes.erase(cached_path)
+		if not persist:
+			_cached_nodes.erase(cached_path)
+			node.queue_free()
 		return
 	
 	var children_change_type: int = render_diff.children.change_type
@@ -226,8 +258,8 @@ func _update_node_signal(node: Node, signal_name: String, signal_data: Dictionar
 	elif signal_data.change_type == DIFF_TYPE.DIFF_REMOVED:
 		node.disconnect(signal_name, target_node, target_function)
 
-func do_transition() -> ReactGDTransition:
-	return ReactGDTransition.new()
+func _do_transition(commands: Array) -> ReactGDTransition:
+	return ReactGDTransition.new(commands)
 
 func set_state(new_state: Dictionary) -> void:
 	for state_key in new_state.keys():
