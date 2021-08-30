@@ -176,6 +176,8 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 		
 	
 	elif node_change_type == DIFF_TYPE.DIFF_REMOVED:
+		if node.get_class() == "ReactGDComponent":
+			node.clear_self()
 		parent.remove_child(node)
 		if not persist:
 			_cached_nodes.erase(cached_path)
@@ -298,14 +300,15 @@ func _do_transition(commands: Array) -> ReactGDTransition:
 func _on_store_changed() -> void:
 	self._dirty = true
 
+func clear_self() -> void:
+	var first :Node = _render_state.instance
+	first.queue_free()
+
 func create_store(reducer: String) -> ReactGDStore:
 	return ReactGDStore.new(funcref(self, reducer))
 
 func register_store(store_name: String, store: ReactGDStore) -> void:
 	stores[store_name] = store
-
-func get_store(store_name: String) -> ReactGDStore:
-	return stores[store_name]
 
 func subscribe_to_store(store_name: String) -> void:
 	stores[store_name].subscribe(self, "_on_store_changed")
@@ -315,6 +318,9 @@ func unsubscribe_from_store(store_name: String) -> void:
 
 func dispatch_action(store_name: String, action_type: String, payload) -> void:
 	stores[store_name].dispatch(action_type, payload)
+
+func get_store_state(store_name: String):
+	return stores[store_name].state
 
 func set_state(new_state: Dictionary) -> void:
 	for state_key in new_state.keys():
