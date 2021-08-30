@@ -16,7 +16,7 @@ var _tw: Tween
 var parent_component: Node
 var state: Dictionary
 var events: Dictionary
-var children: Dictionary
+var children: Array
 
 func _init() -> void:
 	_render_state = {}
@@ -46,10 +46,12 @@ func _process(delta: float) -> void:
 
 func _render_process() -> void:
 	var new_render = render()
+	if not new_render: new_render = {}
 	var new_render_state = _build_component(new_render, "")
 	
 	if new_render_state.hash() != _render_state.hash():
 		var render_diff = ReactGDDictionaryMethods.diff(_render_state, new_render_state)
+		if render_diff.empty(): return
 		if parent_component:
 			_update_tree(render_diff, get_parent(), get_index() + 1)
 		else:
@@ -61,6 +63,7 @@ func _render_process() -> void:
 		events[ev] = false
 
 func _build_component(render_state: Dictionary, path: String) -> Dictionary:
+	if render_state.empty(): return {}
 	var props: Dictionary = render_state.get("props", {})
 	var children: Array = render_state.get("children", [])
 	render_state.id += str(props.get("key", ""))
@@ -102,7 +105,7 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 	
 	if node.instance.get_class() == "ReactGDComponent":
 		node.instance.children = children
-		children = []
+		node.children = {}
 	else:
 		var prev_conditional_true := false
 		var new_children := {}
@@ -283,7 +286,7 @@ func trigger_event(event_name: String, val: bool = true) -> void:
 
 func construct() -> void: pass
 
-func render(): return {}
+func render() -> Dictionary: return {}
 
 func get_class() -> String: return "ReactGDComponent"
 
