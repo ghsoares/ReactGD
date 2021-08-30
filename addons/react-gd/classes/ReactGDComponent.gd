@@ -15,12 +15,14 @@ var _cached_nodes: Dictionary
 var _tw: Tween
 var parent_component: Node
 var state: Dictionary
+var stores: Dictionary
 var events: Dictionary
 var children: Array
 
 func _init() -> void:
 	_render_state = {}
 	_cached_nodes = {}
+	stores = {}
 
 func _ready() -> void:
 	_tw = Tween.new()
@@ -43,6 +45,13 @@ func _process(delta: float) -> void:
 		
 		var elapsed := OS.get_ticks_msec() - start
 		print("(", name, ") Render: ", elapsed, " ms")
+	
+	for node in _cached_nodes.values():
+		if not node.is_inside_tree(): continue
+		
+		var props: Dictionary = node.get_meta("props")
+		if node is Control:
+			node.rect_pivot_offset = node.rect_size * props.get("rect_pivot_center", Vector2.ZERO)
 
 func _render_process() -> void:
 	var new_render = render()
@@ -134,6 +143,8 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 				new_children[child.id] = _build_component(child, cached_path + "_")
 		node.children = new_children
 	
+	node.instance.set_meta("props", props)
+	
 	node.props = props
 	#node.children = children
 	return node
@@ -156,10 +167,14 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 	if node_change_type == DIFF_TYPE.DIFF_ADDED:
 		if node.get_class() == "ReactGDComponent":
 			node.parent_component = self
+			for store_name in stores.keys():
+				node.stores[store_name] = stores[store_name]
 		parent.add_child(node, true)
 		parent.move_child(node, index)
 		if ref != "":
 			self.set_indexed(ref, node)
+		
+	
 	elif node_change_type == DIFF_TYPE.DIFF_REMOVED:
 		parent.remove_child(node)
 		if not persist:
@@ -200,6 +215,9 @@ func _update_node_props(node: Node, props: Dictionary) -> void:
 			_update_transition(node, prop_name, prop_value["reactgd_transition_data"])
 			continue
 		node.set_indexed(prop_name, prop_value)
+		if node is LineEdit:
+			if prop_name == "text":
+				node.caret_position = prop_value.length()
 
 func _update_transition(node: Node, prop_name: String, transition_data: Dictionary) -> void:
 	if transition_data.change_type == DIFF_TYPE.DIFF_REMOVED: return
@@ -276,6 +294,27 @@ func _update_node_signal(node: Node, signal_name: String, signal_data: Dictionar
 
 func _do_transition(commands: Array) -> ReactGDTransition:
 	return ReactGDTransition.new(commands)
+
+func _on_store_changed() -> void:
+	self._dirty = true
+
+func create_store(reducer: String) -> ReactGDStore:
+	return ReactGDStore.new(funcref(self, reducer))
+
+func register_store(store_name: String, store: ReactGDStore) -> void:
+	stores[store_name] = store
+
+func get_store(store_name: String) -> ReactGDStore:
+	return stores[store_name]
+
+func subscribe_to_store(store_name: String) -> void:
+	stores[store_name].subscribe(self, "_on_store_changed")
+
+func unsubscribe_from_store(store_name: String) -> void:
+	stores[store_name].unsubscribe(self, "_on_store_changed")
+
+func dispatch_action(store_name: String, action_type: String, payload) -> void:
+	stores[store_name].dispatch(action_type, payload)
 
 func set_state(new_state: Dictionary) -> void:
 	for state_key in new_state.keys():
