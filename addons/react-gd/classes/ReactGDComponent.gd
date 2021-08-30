@@ -102,6 +102,8 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 			node.persist = props[prop_name]
 		elif prop_name == "ref":
 			node.ref = props[prop_name]
+		elif prop_name == "children":
+			children.append_array(props[prop_name])
 	
 	if node.instance.get_class() == "ReactGDComponent":
 		node.instance.children = children
