@@ -10,6 +10,8 @@ func parse(code: String) -> String:
 	
 	tokenizer.add_token("symbol", '[\\w.:]+')
 	tokenizer.add_token("string", '"[^"]*"')
+	tokenizer.add_token("comment", '#.*')
+	tokenizer.add_ignore_token("comment")
 	
 	while true:
 		var tokenized := tokenizer.tokenize(code)
