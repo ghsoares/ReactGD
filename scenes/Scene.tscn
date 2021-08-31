@@ -1,7 +1,0 @@
-[gd_scene format=2]
-
-[node name="Scene" type="Node"]
-
-[node name="NodeA" type="Node" parent="."]
-
-[node name="NodeB" type="Node" parent="."]
