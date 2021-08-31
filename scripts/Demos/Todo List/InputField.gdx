@@ -1,0 +1,43 @@
+tool
+extends ReactGDComponent
+
+func construct():
+	self.state = {"text": ""}
+
+func on_text_changed(new_text: String):
+	set_state({"text": new_text})
+
+func on_add():
+	"""
+	Dispatch a action to a store,
+	provide the action type and the payload,
+	so the reducer of the store will update
+	the store state according to the action.
+
+	You can pass any value as payload, just make
+	sure that the reducer can handle it when handling
+	the action type.
+	"""
+	dispatch_action("tasks", "add", self.state.text)
+	set_state({"text": ""})
+
+func render():
+	return (
+		<HBoxContainer
+			size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		>
+			<LineEdit
+				placeholder_text="Insert here the task name..."
+				text=self.state.text
+				size_flags_horizontal=Control.SIZE_EXPAND_FILL
+				on_text_changed="on_text_changed"
+			/>
+			<Button
+				text="Add"
+				on_pressed="on_add"
+			/>
+		</HBoxContainer>
+	)
+
+
+

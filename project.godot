@@ -17,22 +17,27 @@ _global_script_classes=[ {
 "base": "Object",
 "class": "ReactGDDictionaryMethods",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDDictionaryMethods.gd"
+"path": "res://addons/react-gd/utility/ReactGDDictionaryMethods.gd"
 }, {
 "base": "Object",
 "class": "ReactGDImportParser",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDImportParser.gd"
+"path": "res://addons/react-gd/utility/ReactGDImportParser.gd"
 }, {
 "base": "Node",
 "class": "ReactGDPathUtility",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDPathUtility.gd"
+"path": "res://addons/react-gd/utility/ReactGDPathUtility.gd"
+}, {
+"base": "Object",
+"class": "ReactGDStore",
+"language": "GDScript",
+"path": "res://addons/react-gd/classes/ReactGDStore.gd"
 }, {
 "base": "Object",
 "class": "ReactGDTokenizer",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDTokenizer.gd"
+"path": "res://addons/react-gd/utility/ReactGDTokenizer.gd"
 }, {
 "base": "Object",
 "class": "ReactGDTransition",
@@ -42,18 +47,19 @@ _global_script_classes=[ {
 "base": "Object",
 "class": "ReactGDTransitionParser",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDTransitionParser.gd"
+"path": "res://addons/react-gd/utility/ReactGDTransitionParser.gd"
 }, {
 "base": "Object",
 "class": "ReactGDXParser",
 "language": "GDScript",
-"path": "res://addons/react-gd/Utility/ReactGDXParser.gd"
+"path": "res://addons/react-gd/utility/ReactGDXParser.gd"
 } ]
 _global_script_class_icons={
 "ReactGDComponent": "",
 "ReactGDDictionaryMethods": "",
 "ReactGDImportParser": "",
 "ReactGDPathUtility": "",
+"ReactGDStore": "",
 "ReactGDTokenizer": "",
 "ReactGDTransition": "",
 "ReactGDTransitionParser": "",
@@ -63,6 +69,7 @@ _global_script_class_icons={
 [application]
 
 config/name="ReactGD"
+run/main_scene="res://Scenes/Demos.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]
