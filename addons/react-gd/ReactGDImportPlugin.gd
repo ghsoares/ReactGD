@@ -52,14 +52,14 @@ func import(source_file: String, save_path: String, options, platform_variants, 
 	var source_folder = ReactGDPathUtility.get_file_path(source_file)
 	
 	var GDX_parser := ReactGDXParser.new()
-	var transition_parser := ReactGDTransitionParser.new()
+	#var transition_parser := ReactGDTransitionParser.new()
 	var import_parser := ReactGDImportParser.new()
 	GDX_parser.sed = source_file
 	GDX_parser.unfold_blocks = options.unfold_blocks
 	import_parser.source_path = source_folder
 	
 	source = GDX_parser.parse(source)
-	source = transition_parser.parse(source)
+	#source = transition_parser.parse(source)
 	source = import_parser.parse(source)
 	
 	script.source_code = source

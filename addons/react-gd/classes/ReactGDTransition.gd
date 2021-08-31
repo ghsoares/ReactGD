@@ -9,28 +9,15 @@ var _velocity: float
 var _current_time: float
 var _prev_time: float
 
-func _init(commands: Array = []) -> void:
+func _init() -> void:
 	_frames = []
 	_props = []
 	_hash = 0
 	_velocity = 1.0
 	_current_time = 0.0
 	_prev_time = 0.0
-	from_commands(commands)
 
-func from_commands(commands: Array):
-	for command in commands:
-		match command.type:
-			"go_to": _go_to(command)
-			"punch":_punch(command)
-			"shake": _shake(command)
-			"delay": _delay(command.value)
-			"time": _time(command.value)
-			"append": _append(command.value)
-			"velocity": _velocity(command.value)
-			"persist": _persist(command.value)
-
-func _go_to(data: Dictionary):
+func go_to(data: Dictionary):
 	var target = data.target
 	var duration :float = data.duration
 	var prop :String = data.get("prop", "")
@@ -52,8 +39,9 @@ func _go_to(data: Dictionary):
 	})
 	_current_time += duration
 	_prev_time = _current_time
+	return self
 
-func _punch(data: Dictionary):
+func punch(data: Dictionary):
 	var peak = data.peak
 	var target = data.target
 	var duration :float = data.duration
@@ -84,8 +72,9 @@ func _punch(data: Dictionary):
 	})
 	_current_time += duration
 	_prev_time = _current_time
+	return self
 
-func _shake(data: Dictionary):
+func shake(data: Dictionary):
 	var peak_min = data.peak_min
 	var peak_max = data.peak_max
 	var target = data.target
@@ -119,22 +108,27 @@ func _shake(data: Dictionary):
 	
 	_current_time += duration
 	_prev_time = _current_time
+	return self
 
-func _delay(secs: float):
+func delay(secs: float):
 	_current_time += secs / _velocity
 	_prev_time = _current_time
+	return self
 
-func _time(time: float):
+func time(time: float):
 	_current_time = time / _velocity
 	_prev_time = _current_time
+	return self
 
-func _append(time: float):
+func append(time: float):
 	_prev_time = time / _velocity
+	return self
 
-func _velocity(vel: float):
-	self._velocity = vel
+func velocity(vel: float):
+	_velocity = vel
+	return self
 
-func _persist(enable: bool):
+func persist(enable: bool):
 	# Even when a transition property don't change, 
 	# you can set it to persist based on another value,
 	# so it always plays on render
@@ -142,6 +136,7 @@ func _persist(enable: bool):
 		_hash = OS.get_ticks_msec()
 	else:
 		_hash = 0
+	return self
 
 static func sort_frames(frame_a: Dictionary, frame_b: Dictionary) -> bool:
 	return frame_a.time < frame_b.time

@@ -48,71 +48,72 @@ func _extract_tags(code: String) -> Array:
 	var ignore_count := 0
 	
 	while i < tokenized.num_tokens:
-		if tokenized.get_token(i).name == "symbol":
-			var string: String = tokenized.get_token(i).string
-			
-			if string == "if" or string == "elif":
-				var start_scope := tokenized.find_token("colon", i)
-				assert(start_scope != -1, "Expected " + string + " statement block")
-				
-				var conditional = tokenized.slice_string(code, i + 1, start_scope - 1)
-				
-				var indent = tokenized.get_token(i).indent
-				var end_scope := tokenized.get_scope_end(indent + 1, start_scope + 1)
-				
-				var substr = tokenized.slice_string(code, start_scope + 1, end_scope)
-				var child_tags = _extract_tags(substr)
-				
-				var type = string.capitalize()
-				
-				tags.append({
-					"type": "start",
-					"code": type + " conditional = (" + conditional + ")",
-					"indent": indent,
-					"line": tokenized.get_token(i).line
-				})
-				tags += child_tags
-				tags.append({
-					"type": "end",
-					"code": type,
-					"indent": indent,
-					"line": tokenized.get_token(i).line
-				})
-				
-				i = end_scope + 1
-				continue
-			elif string == "else":
-				var start_scope := tokenized.find_token("colon", i)
-				assert(start_scope != -1, "Expected else statement block")
-				
-				var indent = tokenized.get_token(i).indent
-				var end_scope := tokenized.get_scope_end(indent + 1, start_scope + 1)
-				
-				var substr = tokenized.slice_string(code, start_scope + 1, end_scope)
-				var child_tags = _extract_tags(substr)
-				
-				tags.append({
-					"type": "start",
-					"code": "Else",
-					"indent": indent,
-					"line": tokenized.get_token(i).line
-				})
-				tags += child_tags
-				tags.append({
-					"type": "end",
-					"code": "Else",
-					"indent": indent,
-					"line": tokenized.get_token(i).line
-				})
-				
-				i = end_scope + 1
-				continue
 		
 		if tokenized.get_token(i).name == "par_open":
 			ignore_count += 1
 		elif tokenized.get_token(i).name == "par_close":
 			ignore_count -= 1
 		if ignore_count == 0:
+			if tokenized.get_token(i).name == "symbol":
+				var string: String = tokenized.get_token(i).string
+				
+				if string == "if" or string == "elif":
+					var start_scope := tokenized.find_token("colon", i)
+					assert(start_scope != -1, "Expected " + string + " statement block")
+					
+					var conditional = tokenized.slice_string(code, i + 1, start_scope - 1)
+					
+					var indent = tokenized.get_token(i).indent
+					var end_scope := tokenized.get_scope_end(indent + 1, start_scope + 1)
+					
+					var substr = tokenized.slice_string(code, start_scope + 1, end_scope)
+					var child_tags = _extract_tags(substr)
+					
+					var type = string.capitalize()
+					
+					tags.append({
+						"type": "start",
+						"code": type + " conditional = (" + conditional + ")",
+						"indent": indent,
+						"line": tokenized.get_token(i).line
+					})
+					tags += child_tags
+					tags.append({
+						"type": "end",
+						"code": type,
+						"indent": indent,
+						"line": tokenized.get_token(i).line
+					})
+					
+					i = end_scope + 1
+					continue
+				elif string == "else":
+					var start_scope := tokenized.find_token("colon", i)
+					assert(start_scope != -1, "Expected else statement block")
+					
+					var indent = tokenized.get_token(i).indent
+					var end_scope := tokenized.get_scope_end(indent + 1, start_scope + 1)
+					
+					var substr = tokenized.slice_string(code, start_scope + 1, end_scope)
+					var child_tags = _extract_tags(substr)
+					
+					tags.append({
+						"type": "start",
+						"code": "Else",
+						"indent": indent,
+						"line": tokenized.get_token(i).line
+					})
+					tags += child_tags
+					tags.append({
+						"type": "end",
+						"code": "Else",
+						"indent": indent,
+						"line": tokenized.get_token(i).line
+					})
+					
+					i = end_scope + 1
+					continue
+			
 			if tokenized.get_token(i).name == "tag_start_open" || tokenized.get_token(i).name == "tag_end_open":
 				tag_start = i
 			elif tokenized.get_token(i).name == "tag_start_close" || tokenized.get_token(i).name == "tag_single_close":
@@ -281,9 +282,9 @@ func _parse_gdx(code: String, indent: int) -> String:
 	var hierarchy :Dictionary = _build_hierarchy(tags)[0]
 	var final : String
 	if unfold_blocks:
-		final += ReactGDDictionaryMethods.stringify(hierarchy, "\t", indent)
+		final = ReactGDDictionaryMethods.stringify(hierarchy, "\t", indent)
 	else:
-		final = str(hierarchy)
+		final = ReactGDDictionaryMethods.stringify(hierarchy, "", indent)
 	
 	return final
 

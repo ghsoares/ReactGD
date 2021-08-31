@@ -9,34 +9,40 @@ enum DIFF_TYPE {
 	DIFF_UNCHANGED = 3
 }
 
+static func merge_dict(dictA: Dictionary, dictB: Dictionary):
+	var keys := dictB.keys()
+	for k in keys:
+		dictA[k] = dictB[k]
+
 """
 This function returns a string literal of a Dictionary,
 instead of a json like JSON.print does
 """
 static func stringify(obj, indent: String = " ", curr_indent: int = 0) -> String:
 	var res := ""
+	var line_break := "\n" if indent != "" else ""
 	if obj is Array:
 		res += "["
 		for val in obj:
-			res += "\n" + indent.repeat(curr_indent)
+			res += line_break + indent.repeat(curr_indent)
 			if val is Array or val is Dictionary:
 				res += stringify(val, indent, curr_indent + 1) + ","
 			else:
 				res += str(val) + ","
 		if !obj.empty():
-			res += "\n" + indent.repeat(curr_indent - 1)
+			res += line_break + indent.repeat(curr_indent - 1)
 		res += "]"
 	elif obj is Dictionary:
 		res += "{"
 		for k in obj.keys():
 			var val = obj[k]
-			res += "\n" + indent.repeat(curr_indent) + str(k) + ": "
+			res += line_break + indent.repeat(curr_indent) + str(k) + ": "
 			if val is Array or val is Dictionary:
 				res += stringify(val, indent, curr_indent + 1) + ","
 			else:
 				res += str(val) + ","
 		if !obj.empty():
-			res += "\n" + indent.repeat(curr_indent - 1)
+			res += line_break + indent.repeat(curr_indent - 1)
 		res += "}"
 	return res
 

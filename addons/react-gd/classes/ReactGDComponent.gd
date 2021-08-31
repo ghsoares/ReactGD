@@ -84,14 +84,22 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 		node = {
 			"cached_path": cached_path,
 			"instance": _cached_nodes[cached_path],
-			"persist": false,
+			"signals": {},
+			"theme": {
+				"styles": {},
+				"constants": {}
+			},
 			"ref": ""
 		}
 	else:
 		node = {
 			"cached_path": cached_path,
 			"instance": render_state.type.new(),
-			"persist": false,
+			"signals": {},
+			"theme": {
+				"styles": {},
+				"constants": {}
+			},
 			"ref": ""
 		}
 		_cached_nodes[cached_path] = node.instance
@@ -107,12 +115,21 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 					"hash": props[prop_name]._hash
 				}
 			}
-		elif prop_name == "persist":
-			node.persist = props[prop_name]
 		elif prop_name == "ref":
 			node.ref = props[prop_name]
 		elif prop_name == "children":
 			children.append_array(props[prop_name])
+		elif prop_name.begins_with("style_"):
+			var style_name = prop_name.substr(6, prop_name.length())
+			node.theme.styles[style_name] = props[prop_name]
+		elif prop_name.begins_with("const_"):
+			var const_name = prop_name.substr(6, prop_name.length())
+			node.theme.constants[const_name] = props[prop_name]
+		elif prop_name.begins_with("on_"):
+			var signal_name = prop_name.substr(3, prop_name.length())
+			if node.instance.has_signal(signal_name):
+				if props[prop_name] is String and props[prop_name] != "":
+					node.signals[signal_name] = props[prop_name]
 	
 	if node.instance.get_class() == "ReactGDComponent":
 		node.instance.children = children
@@ -146,23 +163,34 @@ func _build_component(render_state: Dictionary, path: String) -> Dictionary:
 	node.instance.set_meta("props", props)
 	
 	node.props = props
-	#node.children = children
 	return node
 
 func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 	var cached_path: String = render_diff.cached_path.value
 	var node_change_type: int = render_diff.instance.change_type
 	var node: Node = render_diff.instance.value
-	var persist: bool = render_diff.persist.value
 	var ref: String = render_diff.ref.value
 	
 	if node_change_type != DIFF_TYPE.DIFF_REMOVED:
 		var props_change_type: int = render_diff.props.change_type
 		var props: Dictionary = render_diff.props.value
+		
+		var signals_change_type: int = render_diff.signals.change_type
+		var signals: Dictionary = render_diff.signals.value
+		
+		var theme_change_type: int = render_diff.theme.change_type
+		var theme: Dictionary = render_diff.theme.value
+		
 		if props_change_type != DIFF_TYPE.DIFF_UNCHANGED:
 			_update_node_props(node, props)
 			if node.get_class() == "ReactGDComponent":
 				node._dirty = true
+		
+		if signals_change_type != DIFF_TYPE.DIFF_UNCHANGED:
+			_update_node_signals(node, signals)
+		
+		if theme_change_type != DIFF_TYPE.DIFF_UNCHANGED:
+			_update_node_theme(node, theme)
 	
 	if node_change_type == DIFF_TYPE.DIFF_ADDED:
 		if node.get_class() == "ReactGDComponent":
@@ -171,19 +199,22 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 				node.stores[store_name] = stores[store_name]
 		parent.add_child(node, true)
 		parent.move_child(node, index)
+		if node.get_class() == "ReactGDComponent":
+			node._render_process()
 		if ref != "":
 			self.set_indexed(ref, node)
-		
 	
 	elif node_change_type == DIFF_TYPE.DIFF_REMOVED:
-		if node.get_class() == "ReactGDComponent":
-			node.clear_self()
 		parent.remove_child(node)
-		if not persist:
-			_cached_nodes.erase(cached_path)
-			node.queue_free()
-			if ref != "":
-				self.set_indexed(ref, null)
+		if node.get_class() == "ReactGDComponent":
+			parent.remove_child(node._render_state.instance)
+		
+		_cached_nodes.erase(cached_path)
+		node.queue_free()
+		if node.get_class() == "ReactGDComponent":
+			node._render_state.instance.queue_free()
+		if ref != "":
+			self.set_indexed(ref, null)
 		return
 	
 	var children_change_type: int = render_diff.children.change_type
@@ -207,11 +238,6 @@ func _update_tree(render_diff: Dictionary, parent: Node, index: int) -> void:
 func _update_node_props(node: Node, props: Dictionary) -> void:
 	for prop_name in props.keys():
 		if props[prop_name].change_type == DIFF_TYPE.DIFF_UNCHANGED: continue
-		if prop_name.begins_with("on_"):
-			var signal_name = prop_name.substr(3, prop_name.length() - 3)
-			if node.has_signal(signal_name):
-				_update_node_signal(node, signal_name, props[prop_name])
-				continue
 		var prop_value = props[prop_name].value
 		if prop_value is Dictionary and prop_value.has("reactgd_transition_data"):
 			_update_transition(node, prop_name, prop_value["reactgd_transition_data"])
@@ -221,7 +247,53 @@ func _update_node_props(node: Node, props: Dictionary) -> void:
 			if prop_name == "text":
 				node.caret_position = prop_value.length()
 
-func _update_transition(node: Node, prop_name: String, transition_data: Dictionary) -> void:
+func _update_node_signals(node: Node, signals: Dictionary) -> void:
+	for signal_name in signals.keys():
+		if signals[signal_name].change_type == DIFF_TYPE.DIFF_UNCHANGED: continue
+		_update_node_signal(node, signal_name, signals[signal_name])
+
+func _update_node_theme(node: Control, theme: Dictionary) -> void:
+	#print(theme)
+	if theme.styles.change_type != DIFF_TYPE.DIFF_UNCHANGED:
+		var styles: Dictionary = theme.styles.value
+		for style_name in styles.keys():
+			if styles[style_name].change_type == DIFF_TYPE.DIFF_UNCHANGED: continue
+			if styles[style_name].change_type == DIFF_TYPE.DIFF_REMOVED:
+				node.add_stylebox_override(style_name, null)
+				continue
+			var style = styles[style_name].value
+			if style == null: continue
+			if style.empty():
+				node.add_stylebox_override(style_name, StyleBoxEmpty.new())
+				continue
+			
+			var stylebox: StyleBox = null
+			
+			if styles[style_name].change_type == DIFF_TYPE.DIFF_ADDED:
+				stylebox = style.type.value.new()
+				node.add_stylebox_override(style_name, stylebox)
+			else:
+				stylebox = node.get_stylebox(style_name)
+			
+			var props: Dictionary = style.get("props", {}).get("value", {})
+			for prop_name in props.keys():
+				if props[prop_name].change_type == DIFF_TYPE.DIFF_REMOVED:
+					stylebox.set_indexed(
+						prop_name, style.type.value.new().get_indexed(prop_name)
+					)
+				else:
+					var prop_val = props[prop_name].value
+					if prop_val is Dictionary and prop_val.has("reactgd_transition_data"):
+						_update_transition(stylebox, prop_name, prop_val["reactgd_transition_data"])
+						continue
+					
+					stylebox.set_indexed(prop_name, prop_val)
+	if theme.constants.change_type != DIFF_TYPE.DIFF_UNCHANGED:
+		var constants: Dictionary = theme.constants.value
+		for const_name in constants.keys():
+			node.add_constant_override(const_name, constants[const_name].value)
+
+func _update_transition(obj: Object, prop_name: String, transition_data: Dictionary) -> void:
 	if transition_data.change_type == DIFF_TYPE.DIFF_REMOVED: return
 	
 	var frames: Array = transition_data.value.frames.value
@@ -231,15 +303,15 @@ func _update_transition(node: Node, prop_name: String, transition_data: Dictiona
 	if prop_name == "transition":
 		prop_name = ""
 	else:
-		_tw.stop(node, prop_name)
+		_tw.stop(obj, prop_name)
 		prop_values = {
-			prop_name: node.get_indexed(prop_name)
+			prop_name: obj.get_indexed(prop_name)
 		}
 	
 	for p_name in prop_names:
 		if p_name != "":
-			prop_values[prop_name + p_name] = node.get_indexed(prop_name + p_name)
-			_tw.stop(node, prop_name + p_name)
+			prop_values[prop_name + p_name] = obj.get_indexed(prop_name + p_name)
+			_tw.stop(obj, prop_name + p_name)
 	
 	frames.sort_custom(ReactGDTransition, "sort_frames")
 	
@@ -253,7 +325,7 @@ func _update_transition(node: Node, prop_name: String, transition_data: Dictiona
 		var ease_type: int = frame.ease_type
 		
 		_tw.interpolate_property(
-			node, p_name, start_value, final_value, duration, trans_type, ease_type,
+			obj, p_name, start_value, final_value, duration, trans_type, ease_type,
 			time
 		)
 		
@@ -294,15 +366,75 @@ func _update_node_signal(node: Node, signal_name: String, signal_data: Dictionar
 	elif signal_data.change_type == DIFF_TYPE.DIFF_REMOVED:
 		node.disconnect(signal_name, target_node, target_function)
 
-func _do_transition(commands: Array) -> ReactGDTransition:
-	return ReactGDTransition.new(commands)
-
 func _on_store_changed() -> void:
 	self._dirty = true
 
-func clear_self() -> void:
-	var first :Node = _render_state.instance
-	first.queue_free()
+func do_transition() -> ReactGDTransition:
+	return ReactGDTransition.new()
+
+func create_style(style_data) -> Dictionary:
+	var data := {}
+	if style_data is Array:
+		for d in style_data:
+			ReactGDDictionaryMethods.merge_dict(data, d)
+	elif style_data is Dictionary:
+		data = style_data
+	else:
+		assert(false, "Invalid style data type")
+	assert(data.has("type"), "Style must have the stylebox type!")
+	var style := {
+		"type": data.type,
+		"props": {}
+	}
+	
+	for prop_name in data.keys():
+		if prop_name == "type": continue
+		var prop_value = data[prop_name]
+		
+		if prop_value is ReactGDTransition:
+			prop_value = {
+				"reactgd_transition_data": {
+					"frames": prop_value._frames,
+					"props": prop_value._props,
+					"hash": prop_value._hash
+				}
+			}
+		
+		match prop_name:
+			"border_width":
+				for p in ["_left", "_right", "_top", "_bottom"]:
+					style.props["border_width" + p] = prop_value
+			"border_width_horizontal":
+				for p in ["_left", "_right"]:
+					style.props["border_width" + p] = prop_value
+			"border_width_vertical":
+				for p in ["_top", "_bottom"]:
+					style.props["border_width" + p] = prop_value
+			"corner_radius":
+				for p in ["_top_left", "_top_right", "_bottom_left", "_bottom_right"]:
+					style.props["corner_radius" + p] = prop_value
+			"expand_margin":
+				for p in ["_left", "_right", "_top", "_bottom"]:
+					style.props["expand_margin" + p] = prop_value
+			"expand_margin_horizontal":
+				for p in ["_left", "_right"]:
+					style.props["expand_margin" + p] = prop_value
+			"expand_margin_vertical":
+				for p in ["_top", "_bottom"]:
+					style.props["expand_margin" + p] = prop_value
+			"content_margin":
+				for p in ["_left", "_right", "_top", "_bottom"]:
+					style.props["content_margin" + p] = prop_value
+			"content_margin_horizontal":
+				for p in ["_left", "_right"]:
+					style.props["content_margin" + p] = prop_value
+			"content_margin_vertical":
+				for p in ["_top", "_bottom"]:
+					style.props["content_margin" + p] = prop_value
+			_:
+				style.props[prop_name] = prop_value
+	
+	return style
 
 func create_store(reducer: String) -> ReactGDStore:
 	return ReactGDStore.new(funcref(self, reducer))
@@ -330,6 +462,9 @@ func set_state(new_state: Dictionary) -> void:
 func trigger_event(event_name: String, val: bool = true) -> void:
 	events[event_name] = val
 	_dirty = true
+
+func add_child(node, legible_name = false):
+	.add_child(node, legible_name)
 
 func construct() -> void: pass
 
