@@ -204,6 +204,22 @@ func update_node_props(
 				node_update_signal(node, signal_name, null, prop_value)
 			else:
 				node_update_signal(node, signal_name, prev_props[prop_name], prop_value)
+		# If the prop name begins with `color_` this means
+		# that this prop is a theme color
+		elif prop_name.begins_with("color_"):
+			var color_name: String = prop_name.substr(6, prop_name.length() - 6)
+			if not prev_props.has(prop_name):
+				node_update_color(node, color_name, null, prop_value)
+			else:
+				node_update_color(node, color_name, prev_props[prop_name], prop_value)
+		# If the prop name begins with `const_` this means
+		# that this prop is a theme color
+		elif prop_name.begins_with("const_"):
+			var const_name: String = prop_name.substr(6, prop_name.length() - 6)
+			if not prev_props.has(prop_name):
+				node_update_constant(node, const_name, null, prop_value)
+			else:
+				node_update_constant(node, const_name, prev_props[prop_name], prop_value)
 		# If the prop name begins with `style_` this means
 		# that this prop is a theme style
 		elif prop_name.begins_with("style_"):
@@ -220,6 +236,7 @@ func update_node_props(
 				node_update_font(node, font_name, null, prop_value)
 			else:
 				node_update_font(node, font_name, prev_props[prop_name], prop_value)
+		
 		else:
 			node_update_prop(node, prop_name, prop_value)
 	
@@ -281,12 +298,38 @@ func node_update_signal(node: Node, signal_name: String, previous_value, current
 		)
 
 """
+Update the node color.
+Add it or removed when needed.
+"""
+func node_update_color(node: Control, color_name: String, previous_value, current_value) -> void:
+	# There is no color, reset to default
+	if current_value == null:
+		node.add_color_override(color_name, node.get_color(color_name, node.get_class()))
+		return
+	
+	# Just set the color, simple as that
+	node.add_color_override(color_name, current_value)
+
+"""
+Update the node constant.
+Add it or removed when needed.
+"""
+func node_update_constant(node: Control, constant_name: String, previous_value, current_value) -> void:
+	# There is no color, reset to default
+	if current_value == null:
+		node.add_constant_override(constant_name, node.get_constant(constant_name, node.get_class()))
+		return
+	
+	# Just set the constant, simple as that
+	node.add_constant_override(constant_name, current_value)
+
+"""
 Update the node style.
 Add a new style or remove it when needed.
 """
 func node_update_style(node: Control, style_name: String, previous_value, current_value) -> void:
 	# There is no style
-	if not current_value:
+	if current_value == null:
 		node.add_stylebox_override(style_name, null)
 		return
 	
@@ -316,7 +359,7 @@ Load or remove the font when needed
 """
 func node_update_font(node: Control, font_name: String, previous_value, current_value) -> void:
 	# There is not font
-	if not current_value:
+	if current_value == null:
 		node.add_font_override(font_name, null)
 		return
 	
@@ -334,6 +377,10 @@ func node_update_font(node: Control, font_name: String, previous_value, current_
 		font = DynamicFont.new()
 		font.font_data = ResourceLoader.load(current_value.src)
 		node.add_font_override(font_name, font)
+	
+	# Set the font resource antialiased and hinting props
+	font.font_data.antialiased = current_value.font_antialiased
+	font.font_data.hinting = current_value.font_hinting
 	
 	# Go for each property
 	var props: Dictionary = current_value.props

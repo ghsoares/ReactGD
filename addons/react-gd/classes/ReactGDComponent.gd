@@ -226,6 +226,8 @@ func create_font(fonts_data) -> Dictionary:
 	# shorthands, etc.
 	var font := {
 		"src": complete_data.src,
+		"font_antialiased": complete_data.get("font_antialiased", true),
+		"font_hinting": complete_data.get("font_hinting", DynamicFontData.HINTING_NORMAL),
 		"props": {}
 	}
 	
