@@ -17,7 +17,7 @@ func create_node(node_data: Dictionary, path: String) -> Dictionary:
 	# Grab all the relevant data
 	var node_id: String = node_data.id
 	var node_props: Dictionary = node_data.props
-	var node_children: Dictionary = node_props.children
+	var node_children: Array = node_props.children
 	var node_cached_path: String = path + node_id
 	var node_type = node_data.type
 	
@@ -44,11 +44,14 @@ func create_node(node_data: Dictionary, path: String) -> Dictionary:
 			"cached_path": node_cached_path
 		}
 	
+	# Convert the children from Array to Dictionary,
+	# makes tree difference easier when updating the node
+	node_props.children = {}
+	
 	# This node has children, so create then too
 	if not node_children.empty():
-		for child_id in node_children.keys():
-			var child_data: Dictionary = node_children[child_id]
-			node_children[child_id] = create_node(child_data, node_cached_path)
+		for child_data in node_children:
+			node_props.children[child_data.id] = create_node(child_data, node_cached_path)
 	
 	return node
 
@@ -115,7 +118,6 @@ func update_node(
 	# The node was added
 	if prev_node_state.empty():
 		parent_node.add_child(current_instance)
-		parent_node.move_child(current_instance, idx)
 	# This node already exists
 	else:
 		# Update the previous children
@@ -130,6 +132,9 @@ func update_node(
 					update_node(parent_node, -1, child, {})
 				else:
 					update_node(current_instance, -1, child, {})
+	
+	# Move the node to the index
+	parent_node.move_child(current_instance, idx)
 	
 	# The node child index, dictates the index position as child of a node
 	var node_idx := 0
@@ -172,12 +177,12 @@ func update_node_props(
 	root_component: Node, node: Node, prev_props: Dictionary,
 	props: Dictionary
 ) -> bool:
-	# Tells if the node properties have been changed
-	var changed := false
-	
 	# If the node is a component, just pass the props to the component's
 	# `props` variable
 	if node.get_class() == "ReactGDComponent":
+		# Only return true if the props truly changed,
+		# so the component can render
+		var changed := false
 		for prop_name in props.keys():
 			if not prev_props.has(prop_name) or hash(prev_props[prop_name]) != hash(props[prop_name]):
 				node.props[prop_name] = props[prop_name]
@@ -199,11 +204,26 @@ func update_node_props(
 				node_update_signal(node, signal_name, null, prop_value)
 			else:
 				node_update_signal(node, signal_name, prev_props[prop_name], prop_value)
+		# If the prop name begins with `style_` this means
+		# that this prop is a theme style
+		elif prop_name.begins_with("style_"):
+			var style_name: String = prop_name.substr(6, prop_name.length() - 6)
+			if not prev_props.has(prop_name):
+				node_update_style(node, style_name, null, prop_value)
+			else:
+				node_update_style(node, style_name, prev_props[prop_name], prop_value)
+		# If the prop name begins with `font_` this means
+		# that this prop is a theme font
+		elif prop_name.begins_with("font_") or prop_name == "font":
+			var font_name: String = prop_name.substr(5, prop_name.length() - 5)
+			if not prev_props.has(prop_name):
+				node_update_font(node, font_name, null, prop_value)
+			else:
+				node_update_font(node, font_name, prev_props[prop_name], prop_value)
 		else:
 			node_update_prop(node, prop_name, prop_value)
-			changed = true
 	
-	return changed
+	return true
 
 """
 Update the node property.
@@ -260,9 +280,65 @@ func node_update_signal(node: Node, signal_name: String, previous_value, current
 			current_value.get("binds", []), current_value.get("flags", 0)
 		)
 
+"""
+Update the node style.
+Add a new style or remove it when needed.
+"""
+func node_update_style(node: Control, style_name: String, previous_value, current_value) -> void:
+	# There is no style
+	if not current_value:
+		node.add_stylebox_override(style_name, null)
+		return
+	
+	var style: StyleBox = null
+	
+	# The node already has a style
+	if previous_value:
+		# The type has changed, instantiate a new one
+		if previous_value.type != current_value.type:
+			style = current_value.type.new()
+			node.add_stylebox_override(style_name, style)
+		else:
+			style = node.get_stylebox(style_name)
+	# The style is new
+	else:
+		style = current_value.type.new()
+		node.add_stylebox_override(style_name, style)
+	
+	# Go for each property
+	var props: Dictionary = current_value.props
+	for prop_name in props.keys():
+		style.set_indexed(prop_name, props[prop_name])
 
-
-
+"""
+Update the node font.
+Load or remove the font when needed
+"""
+func node_update_font(node: Control, font_name: String, previous_value, current_value) -> void:
+	# There is not font
+	if not current_value:
+		node.add_font_override(font_name, null)
+		return
+	
+	var font: DynamicFont = null
+	
+	# The node already has a font loaded
+	if previous_value:
+		font = node.get_font(font_name)
+		# The font data src path has changed, load new one
+		if previous_value.src != current_value.src:
+			font.font_data = ResourceLoader.load(current_value.src)
+	
+	# The font is new
+	else:
+		font = DynamicFont.new()
+		font.font_data = ResourceLoader.load(current_value.src)
+		node.add_font_override(font_name, font)
+	
+	# Go for each property
+	var props: Dictionary = current_value.props
+	for prop_name in props.keys():
+		font.set_indexed(prop_name, props[prop_name])
 
 
 
