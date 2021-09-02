@@ -196,6 +196,10 @@ func update_node_props(
 		# Children is ignored for regular nodes,
 		# even for custom types, use `get_children` instead
 		if prop_name == "children": continue
+		# This is a ref property, set the node instance to the
+		# provided variable name in the component
+		elif prop_name == "ref":
+			root_component.set_indexed(prop_value, node)
 		# If the prop name begins with `on_`, this means
 		# that this prop is a signal
 		elif prop_name.begins_with("on_"):
@@ -246,14 +250,26 @@ func update_node_props(
 Update the node property.
 Some nodes have undesired behaviour on properties changes,
 so this function takes care of these behaviours.
+Also this function handles shorthands that would be
+function calls, like "anchors_preset" that calls "set_anchors_preset" of
+Control node
 """
 func node_update_prop(node: Node, prop_name: String, prop_value) -> void:
-	# LineEdit resets the caret position when text is changed
-	if node is LineEdit and prop_name == "text":
-		var before: int = node.caret_position
-		node.text = prop_value
-		node.caret_position = before
-		return
+	if node is LineEdit:
+		# LineEdit resets the caret position when text is changed
+		if prop_name == "text":
+			var before: int = node.caret_position
+			node.text = prop_value
+			node.caret_position = before
+			return
+	elif node is Control:
+		# Calls "set_anchors_preset"
+		if prop_name == "anchors_preset":
+			node.set_anchors_preset(prop_value)
+			return
+		elif prop_name == "margins_preset":
+			node.set_margins_preset(prop_value)
+			return
 	
 	# Default behaviour, just set the node property
 	node.set_indexed(prop_name, prop_value)
