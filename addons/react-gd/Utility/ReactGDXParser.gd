@@ -276,72 +276,91 @@ func _parse_tag(tag: Dictionary) -> Dictionary:
 		i = skip
 	return tag_info
 
-# Finally, this function build the node tree structure
-func _build_tree(tags: Array, id: String) -> Dictionary:
-	var added_ids := []
+# This function get the end tag of a start tag
+func _find_tag_end(i: int, tags: Array, class_type: String) -> int:
+	var count := 0
+	var num_tags := tags.size()
 	
-	# The tree structure should have only node in the root,
-	# the subsequent tags are children. In cases where the first tag
-	# is a start tag, then the last tag in array should be end tag.
-	
-	var tag: Dictionary = tags[0]
-	
-	var node := {
-		"id": '"' + id + '"',
-		"type": tag.class,
-		"props": {
-			"children": []
-		}
-	}
-	# Assign all the properties
-	for prop_name in tag.props:
-		# The prop name is wrapped with quotes, so it is a valid
-		# syntax in the final script
-		node.props[prop_name] = tag.props[prop_name]
-	
-	# Get the end tag and build each child 
-	if tag.type == "start":
-		var tag_end := {}
-		# Nested tags layer
-		var layer := 1
-		var child_start := -1
+	while i < num_tags:
+		if tags[i].type == "start":
+			count += 1
+		elif tags[i].type == "end":
+			count -= 1
+			if count == 0:
+				if tags[i].class == class_type:
+					return i
+				else:
+					return -1
 		
-		for i in range(1, tags.size()):
-			var other_tag: Dictionary = tags[i]
-			# Start tag, should have a end tag
-			if other_tag.type == "start":
-				if child_start == -1:
-					child_start = i
-				layer += 1
-			# End tag, followed by a start tag
-			elif other_tag.type == "end":
-				layer -= 1
-				# Child found
-				if layer == 1:
-					# Didn't find a start tag
-					if child_start == -1:
-						throw_error(tags[i].line, tags[i].column, "Closing a tag without opening it")
-					
-					# Closing tag of wrong class
-					if tags[child_start].class != tags[i].class:
-						throw_error(tags[i].line, tags[i].column, "Closing wrong tag class type")
-					
-					# Build this child
-					var child_tags := tags.slice(child_start, i)
-					node.props.children.append(_build_tree(child_tags, _random_id(added_ids)))
-					
-					child_start = -1
-				# Tag end
-				elif layer == 0:
-					# There is remainder tags, this shouldn't happen
-					if i < tags.size() - 1:
-						throw_error(tags[i + 1].line, tags[i + 1].column, "There is remainder tags")
-					break
-			# Just a single tag, so just build it
-			elif other_tag.type == "single":
-				node.props.children.append(_build_tree([other_tag], _random_id(added_ids)))
+		i += 1
 	
-	return node
+	return -1
+
+# Finally, this function build the node tree structure
+func _build_tree(tags: Array) -> Array:
+	# Added ids for the node children
+	var added_ids := []
+	var tree := []
+	
+	var num_tags := tags.size()
+	var i := 0
+	var curr_node := {
+		"id": "",
+		"type": "",
+		"props": {"children": []},
+	}
+
+	while i < num_tags:
+		# Get the node key, this is used for nodes inside for loops,
+		# so we use key to diff from other nodes
+		var key: String = tags[i].props.get("key", "")
+		
+		# This tag has properties
+		if tags[i].type != "end":
+			var class_type: String = tags[i].class
+			# Set the node type
+			curr_node.type = class_type
+			
+			# Set the id to a random one
+			curr_node.id = '"' + _random_id(added_ids) + '"'
+			
+			# Appends the key property if assigned
+			if key != "":
+				curr_node.id += "+str(" + key + ")"
+			
+			# Set the current node props to this tag prop
+			for prop_name in tags[i].props.keys():
+				curr_node.props[prop_name] = tags[i].props[prop_name]
+		
+		# This tag has a end tag
+		if tags[i].type == "start":
+			var class_type: String = tags[i].class
+			# Get the end tag position
+			var j := _find_tag_end(i, tags, class_type)
+			
+			# Get the tags between
+			var between := tags.slice(i + 1, j - 1)
+			
+			# Build then recursively
+			var children := _build_tree(between)
+			
+			# Set the current node children
+			curr_node.props.children = children
+			
+			# Skips to the end tag
+			i = j
+		
+		# Appends this node to the hierarchy
+		if tags[i].type == "end" || tags[i].type == "single":
+			tree.append(curr_node)
+			curr_node = {
+				"type": "",
+				"props": {"children": []},
+			}
+		
+		i += 1
+	
+	return tree
 
 # The tree is formatted to look better when
 # viewing the parsed script
@@ -395,7 +414,7 @@ func _parse_gdx_block(code: String, line: int, column: int, indent: int) -> Stri
 	rng.state = 137
 	
 	# Finally we build the tree
-	var tree := _build_tree(tags, _random_id([]))
+	var tree: Dictionary = _build_tree(tags)[0]
 	
 	return _format(tree, "\t" if unfold_blocks else "", indent + 1)
 
