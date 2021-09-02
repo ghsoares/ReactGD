@@ -89,7 +89,7 @@ func update_node(
 		cached_nodes.erase(prev_node_state.cached_path)
 		
 		# If the current instance is a component, the children
-		# cleanup is realized on _exit_tree
+		# cleanup is realized at _cleanup
 		if not prev_instance_is_component:
 			# Remove previous children
 			for child_id in prev_children.keys():
