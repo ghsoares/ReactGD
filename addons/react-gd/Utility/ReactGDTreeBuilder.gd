@@ -94,7 +94,7 @@ func update_node(
 				update_node(parent_node, -1, child, {})
 			else:
 				update_node(prev_instance, -1, child, {})
-		
+			
 		# Queue free it from the free
 		prev_instance.queue_free()
 		return
@@ -104,6 +104,10 @@ func update_node(
 	var current_props: Dictionary = node_state.props
 	var current_children: Dictionary = current_props.children
 	var instance_is_component: bool = current_instance and current_instance.get_class() == "ReactGDComponent"
+	
+	# Set the component parent if instance is component
+	if instance_is_component:
+		current_instance._parent_component = root_component
 	
 	# Update the props
 	var props_changed := update_node_props(
@@ -177,7 +181,7 @@ func update_node_props(
 	root_component: Node, node: Node, prev_props: Dictionary,
 	props: Dictionary
 ) -> bool:
-	# If the node is a component, just pass the props to the component's
+	# If the node is a component, pass the props to the component's
 	# `props` variable
 	if node.get_class() == "ReactGDComponent":
 		# Only return true if the props truly changed,
@@ -187,7 +191,6 @@ func update_node_props(
 			if not prev_props.has(prop_name) or hash(prev_props[prop_name]) != hash(props[prop_name]):
 				node.props[prop_name] = props[prop_name]
 				changed = true
-		return changed
 	
 	# Pass to each assigned props, signals, themes, ref, etc.
 	for prop_name in props.keys():

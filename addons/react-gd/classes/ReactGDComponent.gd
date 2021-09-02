@@ -50,6 +50,14 @@ func _enter_tree() -> void:
 	_dirty = true
 
 """
+Exit tree function, removes the cached nodes
+"""
+func _exit_tree() -> void:
+	var first: Node = _cached_nodes.values()[0]
+	first.get_parent().remove_child(first)
+	first.queue_free()
+
+"""
 Process function, call `_render_process` if need to render
 """
 func _process(delta: float) -> void:
@@ -248,7 +256,7 @@ func render() -> Dictionary: return {}
 """
 get_string override function, returns class_name
 """
-func get_string() -> String: return "ReactGDComponent"
+func get_class() -> String: return "ReactGDComponent"
 
 
 
