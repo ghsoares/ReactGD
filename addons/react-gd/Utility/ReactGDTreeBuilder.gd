@@ -78,21 +78,22 @@ func update_node(
 	
 	# The node was removed, so just remove it before going further
 	if node_state.empty():
+		# First cleanup if the node is component
+		if prev_instance_is_component:
+			prev_instance._cleanup()
+		
 		# Remove this node from the tree
 		parent_node.remove_child(prev_instance)
 		
 		# Remove it's registry from the cached nodes
 		cached_nodes.erase(prev_node_state.cached_path)
 		
-		# Remove previous children
-		for child_id in prev_children.keys():
-			var child: Dictionary = prev_children[child_id]
-			# If the current instance is a component,
-			# the node must be removed from the instance parent,
-			# else the node must be removed from the instance node
-			if prev_instance_is_component:
-				update_node(parent_node, -1, child, {})
-			else:
+		# If the current instance is a component, the children
+		# cleanup is realized on _exit_tree
+		if not prev_instance_is_component:
+			# Remove previous children
+			for child_id in prev_children.keys():
+				var child: Dictionary = prev_children[child_id]
 				update_node(prev_instance, -1, child, {})
 			
 		# Queue free it from the free
@@ -129,13 +130,7 @@ func update_node(
 			var child: Dictionary = prev_children[child_id]
 			# This node was removed
 			if not current_children.has(child_id):
-				# If the current instance is a component,
-				# the node must be removed from the instance parent,
-				# else the node must be removed from the instance node
-				if instance_is_component:
-					update_node(parent_node, -1, child, {})
-				else:
-					update_node(current_instance, -1, child, {})
+				update_node(current_instance, -1, child, {})
 	
 	# Move the node to the index
 	parent_node.move_child(current_instance, idx)
@@ -146,21 +141,10 @@ func update_node(
 		var child: Dictionary = current_children[child_id]
 		# This node was added
 		if not prev_children.has(child_id):
-			# If the current instance is a component,
-			# the node must be added from the instance parent,
-			# else the node must be added from the instance node
-			if instance_is_component:
-				update_node(parent_node, node_idx, {}, child)
-			else:
-				update_node(current_instance, node_idx, {}, child)
+			update_node(current_instance, node_idx, {}, child)
+		# The node already exists
 		else:
-			# If the current instance is a component,
-			# the node must be updated from the instance parent,
-			# else the node must be updated from the instance node
-			if instance_is_component:
-				update_node(parent_node, node_idx, prev_children[child_id], child)
-			else:
-				update_node(current_instance, node_idx, prev_children[child_id], child)
+			update_node(current_instance, node_idx, prev_children[child_id], child)
 		
 		# This node is a component, jump a node index, because is reserved to the
 		# component rendered children

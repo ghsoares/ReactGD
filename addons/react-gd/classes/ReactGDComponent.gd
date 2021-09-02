@@ -50,12 +50,13 @@ func _enter_tree() -> void:
 	_dirty = true
 
 """
-Exit tree function, removes the cached nodes
+Cleanup tree function, removes the cached nodes
 """
-func _exit_tree() -> void:
+func _cleanup() -> void:
 	var first: Node = _cached_nodes.values()[0]
-	first.get_parent().remove_child(first)
-	first.queue_free()
+	if _parent_component:
+		first.get_parent().remove_child(first)
+		first.queue_free()
 
 """
 Process function, call `_render_process` if need to render
