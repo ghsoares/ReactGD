@@ -107,9 +107,11 @@ func update_node(
 	var current_children: Dictionary = current_props.children
 	var instance_is_component: bool = current_instance and current_instance.get_class() == "ReactGDComponent"
 	
-	# Set the component parent if instance is component
+	# Set the component parent if instance is component,
+	# also set it's name
 	if instance_is_component:
 		current_instance._parent_component = root_component
+		current_instance.name = current_instance.get_component_name()
 	
 	# Update the props
 	var props_changed := update_node_props(
