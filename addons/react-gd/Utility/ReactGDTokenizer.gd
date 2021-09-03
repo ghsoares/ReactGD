@@ -73,9 +73,22 @@ class TokenizedString:
 		assert(false, error_message)
 	
 	# Returns a substring from the start of a token to the end of another token
-	func substr(string: String, token_from: int, token_to: int) -> String:
-		var start := get_token_start(token_from)
-		var end := get_token_end(token_to)
+	func substr(string: String, token_from: int, token_to: int, from_start: bool = true, to_end: bool = true) -> String:
+		var start: int
+		var end: int
+		
+		# Sometimes is wanted to actually substr from the end of the token_from
+		if from_start:
+			start = get_token_start(token_from)
+		else:
+			start = get_token_end(token_from)
+		
+		# Sometimes is wanted to actually substr from the start of the token_to
+		if to_end:
+			end = get_token_end(token_to)
+		else:
+			end = get_token_start(token_to)
+		
 		return string.substr(
 			start, end - start
 		)
@@ -96,6 +109,11 @@ class_name ReactGDTokenizer
 var expressions: Array
 # Tokens to be ignored
 var ignore_expressions: Array
+
+# Offsets the start line, column and indent
+var off_line: int
+var off_column: int
+var off_indent: int
 
 func _init() -> void:
 	expressions = []
@@ -140,13 +158,16 @@ func add_ignore_expression(token_name: String) -> void:
 
 # Main tokenization function, takes a string and returns a object
 # will all the relevant info about the tokenization
-func tokenize(s: String, line: int = 0, column: int = 0, indent: int = 0) -> TokenizedString:
+func tokenize(s: String) -> TokenizedString:
 	var res := TokenizedString.new()
 	var total_tokens := 0
 	var s_len := s.length()
 	
 	#var prev_token := {}
 	
+	var line := off_line
+	var column := off_column
+	var indent := off_indent
 	var i := 0
 	while i < s_len:
 		# Finds the best match

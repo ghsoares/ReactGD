@@ -5,6 +5,7 @@ class_name ReactGDXParser
 var rng : RandomNumberGenerator
 var sed : String
 var unfold_blocks : bool
+var file_name: String
 
 func _init() -> void:
 	rng = RandomNumberGenerator.new()
@@ -91,6 +92,9 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 	
 	# Initializes a tokenizer
 	var tokenizer := ReactGDTokenizer.new()
+	tokenizer.off_line = line
+	tokenizer.off_column = column
+	tokenizer.off_indent = indent
 	# These tokens are only used to find tags
 	tokenizer.add_token_expressions({
 		# Any kind of valid variable name, like
@@ -109,7 +113,7 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 		"container_close": '\\)|\\]|\\}'
 	})
 	# Tokenize the code string
-	var tokenized := tokenizer.tokenize(code, line, column, indent)
+	var tokenized := tokenizer.tokenize(code)
 	# Removes the first and last parentheses
 	tokenized.pop_front()
 	tokenized.pop_back()
@@ -160,7 +164,7 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 				
 				# We ignore the tag start, the tag class name and tag end tokens
 				var tag_code := tokenized.substr(
-					code, tag_start + 2, i - 1
+					code, tag_start + 2, i, true, false
 				)
 				tags.append({
 					"type": tag_type,
@@ -201,6 +205,9 @@ func _parse_tag(tag: Dictionary) -> Dictionary:
 	
 	# Initializes a tokenizer
 	var tokenizer := ReactGDTokenizer.new()
+	tokenizer.off_line = tag.line
+	tokenizer.off_column = tag.column
+	tokenizer.off_indent = tag.indent
 	# These tokens are only used to find tags
 	tokenizer.add_token_expressions({
 		"symbol": '[\\w.:]+',
@@ -222,9 +229,7 @@ func _parse_tag(tag: Dictionary) -> Dictionary:
 		"container_close": '\\)|\\]|\\}'
 	})
 	# Tokenize the code string
-	var tokenized := tokenizer.tokenize(
-		tag.code, tag.line, tag.column, tag.indent
-	)
+	var tokenized := tokenizer.tokenize(tag.code)
 	
 	var tag_info := {
 		"type": tag.type,
@@ -446,6 +451,10 @@ func parse_code(code: String) -> String:
 		
 		# Set the new code
 		code = new_code
+	
+	# Appends a get component name function at the end of the file.
+	code += "\n"
+	code += 'func get_component_name() -> String: return "%s"' % file_name.replace(".gdx", "")
 	
 	return code
 
