@@ -1,10 +1,11 @@
-extends Node
+extends Reference
 
 class_name ReactGDTreeBuilder
 
 # Relevant data from component
 var cached_nodes: Dictionary
 var root_component: Node
+var tween: Tween
 
 """
 Create node function
@@ -122,7 +123,7 @@ func update_node(
 	
 	# The node was added
 	if prev_node_state.empty():
-		parent_node.add_child(current_instance)
+		parent_node.add_child(current_instance, true)
 	# This node already exists
 	else:
 		# Update the previous children
@@ -175,6 +176,10 @@ func update_node_props(
 			if not prev_props.has(prop_name) or hash(prev_props[prop_name]) != hash(props[prop_name]):
 				node.props[prop_name] = props[prop_name]
 				changed = true
+	
+	# The props are passed as the node metadata, which can have some
+	# useful properties that updates the node every frame
+	node.set_meta("_reactgd_props", props)
 	
 	# Pass to each assigned props, signals, themes, ref, etc.
 	for prop_name in props.keys():
@@ -229,7 +234,10 @@ func update_node_props(
 				node_update_font(node, font_name, prev_props[prop_name], prop_value)
 		
 		else:
-			node_update_prop(node, prop_name, prop_value)
+			if not prev_props.has(prop_name):
+				node_update_prop(node, prop_name, null, prop_value)
+			else:
+				node_update_prop(node, prop_name, prev_props[prop_name], prop_value)
 	
 	return true
 
@@ -241,25 +249,32 @@ Also this function handles shorthands that would be
 function calls, like "anchors_preset" that calls "set_anchors_preset" of
 Control node
 """
-func node_update_prop(node: Node, prop_name: String, prop_value) -> void:
+func node_update_prop(node: Node, prop_name: String, prev_value, curr_value) -> void:
 	if node is LineEdit:
 		# LineEdit resets the caret position when text is changed
 		if prop_name == "text":
 			var before: int = node.caret_position
-			node.text = prop_value
+			node.text = curr_value
 			node.caret_position = before
 			return
 	elif node is Control:
 		# Calls "set_anchors_preset"
 		if prop_name == "anchors_preset":
-			node.set_anchors_preset(prop_value)
+			node.set_anchors_preset(curr_value)
 			return
 		elif prop_name == "margins_preset":
-			node.set_margins_preset(prop_value)
+			node.set_margins_preset(curr_value)
 			return
 	
-	# Default behaviour, just set the node property
-	node.set_indexed(prop_name, prop_value)
+	# In case prop value is a transition
+	if curr_value is ReactGDTween:
+		if tween_changed(prev_value, curr_value):
+			# Get the start value
+			var start_value = node.get_indexed(prop_name)
+			obj_update_tween(node, prop_name, curr_value, start_value)
+	else:
+		# Default behaviour, just set the node property
+		node.set_indexed(prop_name, curr_value)
 
 """
 Update the node signal.
@@ -310,6 +325,15 @@ func node_update_color(node: Control, color_name: String, previous_value, curren
 		node.add_color_override(color_name, node.get_color(color_name, node.get_class()))
 		return
 	
+	# Color is a transition
+	if current_value is ReactGDTween:
+		if tween_changed(previous_value, current_value):
+			# Get the start value
+			var start_value = node.get_color(color_name)
+			# Use "custom_colors/*" instead of "add_color_override"
+			obj_update_tween(node, "custom_colors/"+color_name, current_value, start_value)
+		return
+	
 	# Just set the color, simple as that
 	node.add_color_override(color_name, current_value)
 
@@ -321,6 +345,15 @@ func node_update_constant(node: Control, constant_name: String, previous_value, 
 	# There is no color, reset to default
 	if current_value == null:
 		node.add_constant_override(constant_name, node.get_constant(constant_name, node.get_class()))
+		return
+	
+	# Constant is a transition
+	if current_value is ReactGDTween:
+		if tween_changed(previous_value, current_value):
+			# Get the start value
+			var start_value = node.get_constant(constant_name)
+			# Use "custom_constants/*" instead of "add_constant_override"
+			obj_update_tween(node, "custom_constants/"+constant_name, current_value, start_value)
 		return
 	
 	# Just set the constant, simple as that
@@ -351,10 +384,26 @@ func node_update_style(node: Control, style_name: String, previous_value, curren
 		style = current_value.type.new()
 		node.add_stylebox_override(style_name, style)
 	
+	# Use empty dictionary instead of null
+	if previous_value == null:
+		previous_value = {}
+	
 	# Go for each property
 	var props: Dictionary = current_value.props
+	var prev_props: Dictionary = previous_value.get("props", {})
 	for prop_name in props.keys():
-		style.set_indexed(prop_name, props[prop_name])
+		var prop_val = props[prop_name]
+		# Prop is a transition
+		if prop_val is ReactGDTween:
+			# Get the previous prop value
+			var prev_val = prev_props.get(prop_name)
+			if tween_changed(prev_val, prop_val):
+				# Get the start value
+				var start_value = style.get_indexed(prop_name)
+				obj_update_tween(style, prop_name, prop_val, start_value)
+			return
+		else:
+			style.set_indexed(prop_name, prop_val)
 
 """
 Update the node font.
@@ -390,10 +439,79 @@ func node_update_font(node: Control, font_name: String, previous_value, current_
 	for prop_name in props.keys():
 		font.set_indexed(prop_name, props[prop_name])
 
+"""
+Updates the property tween of a object
+"""
+func obj_update_tween(obj: Object, prop_name: String, tw: ReactGDTween, start_value) -> void:
+	# If there is a transition, stop it before
+	tween.stop(obj, prop_name)
+	
+	var frames := tw.frames
+	
+	var curr_value = start_value
+	for frame in frames:
+		var time = frame.time
+		var duration = frame.duration
+		var target_value = frame.target_value
+		var trans_type = frame.trans_type
+		var ease_type = frame.ease_type
+		
+		# Convert string to enum values
+		if trans_type is String:
+			trans_type = trans_type.to_upper()
+			match trans_type:
+				"LINEAR":
+					trans_type = Tween.TRANS_LINEAR
+				"SINE":
+					trans_type = Tween.TRANS_SINE
+				"QUINT":
+					trans_type = Tween.TRANS_QUINT
+				"QUART":
+					trans_type = Tween.TRANS_QUART
+				"QUAD":
+					trans_type = Tween.TRANS_QUAD
+				"EXPO":
+					trans_type = Tween.TRANS_EXPO
+				"ELASTIC":
+					trans_type = Tween.TRANS_ELASTIC
+				"CUBIC":
+					trans_type = Tween.TRANS_CUBIC
+				"CIRC":
+					trans_type = Tween.TRANS_CIRC
+				"BOUNCE":
+					trans_type = Tween.TRANS_BOUNCE
+				"BACK":
+					trans_type = Tween.TRANS_BACK
+				_:
+					assert(false, "Tween don't have transition type '" + trans_type + "'")
+		if ease_type is String:
+			ease_type = ease_type.to_upper()
+			match ease_type:
+				"IN":
+					ease_type = Tween.EASE_IN
+				"OUT":
+					ease_type = Tween.EASE_OUT
+				"IN_OUT":
+					ease_type = Tween.EASE_IN_OUT
+				"OUT_IN":
+					ease_type = Tween.EASE_OUT_IN
+				_:
+					assert(false, "Tween don't have ease type '" + ease_type + "'")
+		
+		tween.interpolate_property(
+			obj, prop_name, curr_value, target_value, duration,
+			trans_type, ease_type, time
+		)
+		# Set the current value
+		curr_value = frame.target_value
+	
+	tween.start()
 
-
-
-
+"""
+Checks if a transition changed
+"""
+func tween_changed(prev_val, curr_val) -> bool:
+	return not prev_val is ReactGDTween or not prev_val or not prev_val.equals_tween(curr_val)
 
 
 

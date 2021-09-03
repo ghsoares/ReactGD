@@ -19,6 +19,8 @@ var _parent_component: Node
 # Dirty boolean says if the node needs to render again,
 # in case of a prop or state change
 var _dirty: bool
+# Tween node, used for property transitions
+var _tw: Tween
 
 # State variable, store the actual state of the node,
 # can be accessed from custom components
@@ -33,6 +35,7 @@ Init function, sets the initial variables
 func _init() -> void:
 	_cached_nodes = {}
 	_current_tree_state = {}
+	_tw = Tween.new()
 	
 	state = {}
 	props = {}
@@ -41,13 +44,17 @@ func _init() -> void:
 Ready function, calls the component constructor
 """
 func _ready() -> void:
+	add_child(_tw)
+	
 	construct()
 
 """
-Enter tree function, queries the component to render
+Enter tree function, instantly renders the component
 """
 func _enter_tree() -> void:
-	_dirty = true
+	# Instantly render component, avoids errors when trying to move this
+	# component's child index
+	_render_process()
 
 """
 Cleanup tree function, removes the cached nodes
@@ -63,12 +70,13 @@ Process function, call `_render_process` if need to render
 """
 func _process(delta: float) -> void:
 	if _dirty:
-		var start := OS.get_ticks_usec()
+		#var start := OS.get_ticks_usec()
 		_render_process()
 		_dirty = false
-		var elapsed = OS.get_ticks_usec() - start
-		elapsed /= 1000.0
-		print("(" + name + ") Render: " + str(elapsed) + " ms")
+		#var elapsed = OS.get_ticks_usec() - start
+		#elapsed /= 1000.0
+		#print("(" + name + ") Render: " + str(elapsed) + " ms")
+	_frame_process()
 
 """
 Main render process function, will be called when this component needs to update.
@@ -80,6 +88,7 @@ func _render_process() -> void:
 	var tree_builder := ReactGDTreeBuilder.new()
 	tree_builder.root_component = self
 	tree_builder.cached_nodes = _cached_nodes
+	tree_builder.tween = _tw
 	
 	# Get the new render state
 	var new_render: Dictionary = render()
@@ -106,6 +115,24 @@ func _render_process() -> void:
 	
 	# Set the current tree state as the new tree state
 	_current_tree_state = tree_state
+
+"""
+Frame process function, called every frame which updates extra props every frame,
+like rect relative pivot offset, which uses rect size that can be changed anytime
+"""
+func _frame_process() -> void:
+	for node in _cached_nodes.values():
+		# Props are stored as meta, called "_reactgd_props"
+		var props: Dictionary = node.get_meta("_reactgd_props")
+		for prop_name in props:
+			var prop_value = props[prop_name]
+			match prop_name:
+				# Relative pivot offset, which sets rect_pivot_offset based on Control's
+				# rect size
+				"rect_relative_pivot_offset":
+					# Value should be a Vector2
+					assert(prop_value is Vector2, '"rect_relative_pivot_offset" needs to be a Vector2')
+					node.rect_pivot_offset = node.rect_size * prop_value
 
 """
 Component constructor function, called on ready
@@ -250,12 +277,25 @@ func create_font(fonts_data) -> Dictionary:
 	return font
 
 """
+Do tween function.
+Returns a new instance of ReactGDTween, used to create property
+transitions
+"""
+func do_tween() -> ReactGDTween:
+	return ReactGDTween.new()
+
+"""
 Main render function, will be overrided by other component scripts
 """
 func render() -> Dictionary: return {}
 
 """
-get_string override function, returns class_name
+Get component name function, returns a name for debug purposes
+"""
+func get_component_name() -> String: return "ReactGDComponent"
+
+"""
+get_class override function, returns class_name
 """
 func get_class() -> String: return "ReactGDComponent"
 
