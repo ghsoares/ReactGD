@@ -43,12 +43,16 @@ func get_option_visibility(option: String, options: Dictionary) -> bool:
 	return true
 
 func import(source_file: String, save_path: String, options, platform_variants, gen_files):
+	var start := OS.get_ticks_msec()
+	
 	var file := File.new()
 	if file.open(source_file, File.READ) != OK:
 		return FAILED
 	
 	var script := GDScript.new()
 	var source = file.get_as_text()
+	var file_name = source_file.split("/")
+	file_name = file_name[file_name.size() - 1]
 	
 	#var source_folder = ReactGDPathUtility.get_file_path(source_file)
 	
@@ -57,6 +61,7 @@ func import(source_file: String, save_path: String, options, platform_variants, 
 	#var import_parser := ReactGDImportParser.new()
 	#GDX_parser.sed = source_file
 	GDX_parser.unfold_blocks = options.unfold_blocks
+	GDX_parser.file_name = file_name
 	#import_parser.source_path = source_folder
 	
 	source = GDX_parser.parse_code(source)
@@ -64,12 +69,19 @@ func import(source_file: String, save_path: String, options, platform_variants, 
 	#source = import_parser.parse(source)
 	script.source_code = source
 	var err := script.reload()
+	
 	if err != OK:
-		assert(false, err)
+		return err
 	
 	var filename := save_path + "." + get_save_extension()
-	return ResourceSaver.save(filename, script)
-
+	err = ResourceSaver.save(filename, script)
+	
+	if err != OK:
+		return err
+	else:
+		var elapsed := OS.get_ticks_msec() - start
+		print('Parsed "%s" in %s ms' % [source_file, elapsed])
+		return err
 
 
 
