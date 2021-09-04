@@ -124,6 +124,7 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 	var tag_class_name := ""
 	# If the token is inside parentheses, so it's a pure GDScript code
 	var ignore_count := 0
+	var prev_tag := {}
 	
 	while i < tokenized.num_tokens:
 		# Current token is container open, increment ignore count
@@ -166,7 +167,7 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 				var tag_code := tokenized.substr(
 					code, tag_start + 2, i, true, false
 				)
-				tags.append({
+				prev_tag = {
 					"type": tag_type,
 					"class": tag_class_name,
 					"code": tag_code.strip_edges(),
@@ -174,12 +175,33 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 					"line": tokenized.get_token_line(tag_start + 2),
 					"column": tokenized.get_token_column(tag_start + 2),
 					"indent": tokenized.get_token_indent(tag_start + 2)
-				})
+				}
+				tags.append(prev_tag)
 				
 				# Reset variables for the next tag
 				tag_start = -1
 				tag_type = ""
 				tag_class_name = ""
+			# This token is a string
+			elif tokenized.get_token_name(i) in ["string", "multiline_string"]:
+				# Adds text to previous tag if not inside tag
+				if tag_start == -1:
+					# A simple string
+					if tokenized.get_token_name(i) == "string":
+						var string := tokenized.get_token_string(i)
+						prev_tag.text = string
+					# A multiline string
+					elif tokenized.get_token_name(i) == "multiline_string":
+						var string: String = tokenized.get_token_string(i)
+						# Remove tabs
+						string = string.replace("\t", "")
+						# Remove line breaks
+						string = string.replace("\\\n", "")
+						# Replace newline for escaped newline character
+						string = string.replace("\n", "\\n")
+						# Convert to simple string
+						string = string.replace('"""', '"')
+						prev_tag.text = string
 		
 		i += 1
 	
@@ -279,6 +301,11 @@ func _parse_tag(tag: Dictionary) -> Dictionary:
 			tokenized.throw_error(i, "Expected property name")
 		
 		i = skip
+	
+	# This tag has a text inside, different from the 'text' prop
+	if tag.has("text"):
+		tag_info.props.text = tag.text
+	
 	return tag_info
 
 # This function get the end tag of a start tag
