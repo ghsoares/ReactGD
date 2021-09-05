@@ -216,10 +216,13 @@ func _extract_tags(code: String, line: int, column: int, indent: int) -> Array:
 func _parse_tag(tag: Dictionary) -> Dictionary:
 	# This tag has no code, so just return it with empty props
 	if tag.code == "":
+		var props := {}
+		if tag.has("text"):
+			props.text = tag.text
 		return {
 			"type": tag.type,
 			"class": tag.class,
-			"props": {},
+			"props": props,
 			"line": tag.line,
 			"column": tag.column,
 			"indent": tag.indent

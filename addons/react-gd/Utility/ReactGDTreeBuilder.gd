@@ -259,7 +259,14 @@ func node_update_prop(node: Node, prop_name: String, prev_value, curr_value) -> 
 			node.text = curr_value
 			node.caret_position = before
 			return
-	elif node is Control:
+	
+	if node is TextureRect:
+		# Sets the texture based on path
+		if prop_name == "texture" and curr_value is String:
+			node.texture = ResourceLoader.load(curr_value)
+			return
+	
+	if node is Control:
 		# Calls "set_anchors_preset"
 		if prop_name == "anchors_preset":
 			node.set_anchors_preset(curr_value)
