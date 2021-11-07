@@ -1,0 +1,18 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=true
+
+[entry]
+
+X11.64="res://addons/reactgd/bin/x11/libreactgd.so"
+Windows.64="res://addons/reactgd/bin/win64/libreactgd.dll"
+OSX.64="res://addons/reactgd/bin/osx/libreactgd.dylib"
+
+[dependencies]
+
+X11.64=[  ]
+Windows.64=[  ]
+OSX.64=[  ]

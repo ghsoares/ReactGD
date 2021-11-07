@@ -1,0 +1,15 @@
+#include "gdxlanguage/gdxlanguagelexer.h"
+#include "gdxlanguage/gdxlanguageparser.h"
+
+int main() {
+	std::string input = "<Test />";
+
+	GDXLanguageLexer *lexer = new GDXLanguageLexer();
+	GDXLanguageParser *parser = new GDXLanguageParser(lexer);
+
+	std::string out = parser->parse(input);
+
+	std::cout << out << std::endl;
+
+	return 0;
+}
