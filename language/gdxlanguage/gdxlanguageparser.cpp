@@ -77,7 +77,7 @@ void GDXLanguageParser::parse_tag(TagToken *tag)
             tag->range->end->column
         );
 
-        std::string repl = "create_node(\"" + id + "\", " + class_name;
+        std::string repl = "ReactGD.create_node(" + class_name;
         if (props.size() == 0) {
             repl += ", {}";
         } else {

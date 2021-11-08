@@ -11,7 +11,7 @@ class ReactGDComponent : public Node {
 		static void _bind_methods();
 
 	public:
-		Dictionary create_node(String id, Ref<Script> type, Dictionary props, Array children);
+		virtual Dictionary _render();
 
 		ReactGDComponent();
 
