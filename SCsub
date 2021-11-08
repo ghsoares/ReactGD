@@ -1,0 +1,38 @@
+# SCsub
+
+import SCons
+import os
+
+Import('env')
+
+def replace_source_file(self, sources, from_file, to_file):
+    dir_path = self.Dir(".").abspath
+    from_file = os.path.normpath(dir_path + "/" + from_file)
+    to_file = os.path.normpath(dir_path + "/" + to_file)
+
+    from_obj = self.Object(from_file)
+    to_obj = self.Object(to_file)
+
+    if from_obj in sources:
+        i = sources.index(from_obj)
+        sources[i] = to_obj
+    else:
+        sources.append(to_obj)
+
+env.__class__.replace_source_file = replace_source_file
+
+if ARGUMENTS.get('reactgd_enabled', 'no') == 'yes':
+    sources = [
+        "register_types.cpp",
+        "language/language/*.cpp",
+        "language/gdxlanguage/*.cpp",
+        "reactgd/*.cpp",
+    ]
+
+    env.replace_source_file(
+        env.modules_sources,
+        "../gdscript/gdscript_parser.cpp",
+        "language/gdxscript_parser.cpp"
+    )
+    for s in sources:
+        env.add_source_files(env.modules_sources, s)
