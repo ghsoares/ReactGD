@@ -12,15 +12,8 @@ public:
 	std::string msg;
 	Cursor cursor;
 
-	explicit ParseException(std::string msg, Cursor cursor) : cursor(cursor)
-	{
-		std::stringstream ss;
-
-		ss << "Parse exception at line " << cursor.line + 1 << " column " << cursor.column + 1;
-		ss << " : " << msg;
-
-		this->msg = ss.str();
-	}
+	explicit ParseException(std::string msg, Cursor cursor) : msg(msg), cursor(cursor)
+	{}
 
 	const char *what() const throw()
 	{
@@ -37,10 +30,10 @@ private:
 	int indent_size;
 
 public:
-	LanguageLexer(int indent_size = 1): indent_size(indent_size) {}
-
 	void reset();
 	void set_source(std::string *source);
+	void set_indent_size(int indent_size);
+	int get_indent_size();
 	std::string *get_source();
 
 	std::string get_str(int pos);

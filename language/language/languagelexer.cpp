@@ -13,6 +13,12 @@ void LanguageLexer::set_source(std::string *source)
 	reset();
 }
 
+void LanguageLexer::set_indent_size(int indent_size) {
+	this->indent_size = indent_size;
+}
+
+int LanguageLexer::get_indent_size() {return indent_size;}
+
 std::string *LanguageLexer::get_source()
 {
 	return source;
