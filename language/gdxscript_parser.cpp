@@ -8775,6 +8775,10 @@ Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, const St
 }
 
 Error GDScriptParser::parse(const String &p_code, const String &p_base_path, bool p_just_validate, const String &p_self_path, bool p_for_completion, Set<int> *r_safe_lines, bool p_dependencies_only) {
+	print_verbose(String("[GDX Parse] Parsing ") + p_base_path);
+	uint32_t start = OS::get_singleton()->get_ticks_msec();
+	uint32_t gdx_elapsed = 0;
+
 	clear();
 
 	GDXLanguageLexer *lexer = new GDXLanguageLexer();
@@ -8783,11 +8787,9 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 	std::string parsed = p_code.utf8().get_data();
 
 	try {
-		print_verbose(String("[GDX Parse] Parsing ") + p_base_path);
-		auto start = OS::get_singleton()->get_ticks_msec();
+		uint32_t gdx_start = OS::get_singleton()->get_ticks_msec();
 		parser->parse(parsed);
-		auto elapsed = OS::get_singleton()->get_ticks_msec() - start;
-		print_verbose(String("[GDX Parse] Elapsed: ") + String::num_int64(elapsed) + " ms");
+		gdx_elapsed = OS::get_singleton()->get_ticks_msec() - gdx_start;
 	} catch (ParseException &e) {
 		_set_error(
 			String(e.what()),
@@ -8812,6 +8814,11 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 	Error ret = _parse(p_base_path);
 	memdelete(tt);
 	tokenizer = nullptr;
+
+	uint32_t elapsed = OS::get_singleton()->get_ticks_msec() - start;
+	print_verbose(String("[GDX Parse] Elapsed: ") + String::num_int64(elapsed) + " ms");
+	print_verbose(String("[GDX Parse] GDX Elapsed: ") + String::num_int64(gdx_elapsed) + " ms");
+
 	return ret;
 }
 
