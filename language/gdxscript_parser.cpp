@@ -1,5 +1,6 @@
 #include "modules/gdscript/gdscript_parser.h"
 #include "gdxlanguage/gdxlanguageparser.h"
+#include "core/os/os.h"
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
@@ -8782,12 +8783,16 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 	std::string parsed = p_code.utf8().get_data();
 
 	try {
+		print_verbose(String("[GDX Parse] Parsing ") + p_base_path);
+		auto start = OS::get_singleton()->get_ticks_msec();
 		parser->parse(parsed);
+		auto elapsed = OS::get_singleton()->get_ticks_msec() - start;
+		print_verbose(String("[GDX Parse] Elapsed: ") + String::num_int64(elapsed) + " ms");
 	} catch (ParseException &e) {
 		_set_error(
 			String(e.what()),
-			e.cursor->line + 1,
-			e.cursor->column + 1
+			e.cursor.line + 1,
+			e.cursor.column + 1
 		);
 		return ERR_PARSE_ERROR;
 	}
