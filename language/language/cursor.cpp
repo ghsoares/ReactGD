@@ -1,9 +1,10 @@
 #include "cursor.h"
 
-Cursor::Cursor(std::string *input)
+Cursor::Cursor(std::string *input, int indent_size)
 {
 	this->input = input;
 	this->input_length = input->size();
+	this->indent_size = indent_size;
 	this->pos = 0;
 	this->character = input->at(0);
 	this->line = 0;
@@ -25,8 +26,12 @@ char Cursor::get_char(int p)
 
 void Cursor::walk()
 {
+	if (character == '\t') {
+		column += indent_size;
+	} else {
+		column++;
+	}
 	pos++;
-	column++;
 
 	if (line_break)
 	{

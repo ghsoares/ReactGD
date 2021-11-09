@@ -1,6 +1,7 @@
 #include "modules/gdscript/gdscript_parser.h"
 #include "gdxlanguage/gdxlanguageparser.h"
 #include "core/os/os.h"
+#include "editor/editor_settings.h"
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
@@ -8783,6 +8784,8 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 
 	GDXLanguageLexer *lexer = new GDXLanguageLexer();
 	GDXLanguageParser *parser = new GDXLanguageParser(lexer);
+
+	lexer->set_indent_size((int)_EDITOR_GET("text_editor/indent/size"));
 
 	std::string parsed = p_code.utf8().get_data();
 
