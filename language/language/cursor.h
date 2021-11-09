@@ -29,6 +29,7 @@ public:
 	void walk_times(int times);
 	void move(int toPos);
 	void skip_ignore();
+	void print();
 };
 
 struct CursorRange
