@@ -9,6 +9,7 @@ struct Cursor
 private:
 	std::string *input;
 	int input_length;
+	int indent_size;
 	bool indenting;
 
 	char get_char(int p);
@@ -23,7 +24,7 @@ public:
 	bool line_break;
 
 	Cursor() {}
-	Cursor(std::string *i);
+	Cursor(std::string *i, int indent_size = 1);
 
 	void walk();
 	void walk_times(int times);
