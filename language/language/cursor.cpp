@@ -97,6 +97,12 @@ void Cursor::skip_ignore()
 	while (
 			character == ' ' ||
 			character == '\n' ||
+			character == '\r' ||
 			character == '\t')
 		walk();
 }
+
+void Cursor::print() {
+	std::cout << "Char: " << character << "Line: " << line + 1 << " Column: " << column + 1 << " Pos: " << pos << std::endl;
+}
+
