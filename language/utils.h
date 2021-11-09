@@ -6,22 +6,22 @@
 class SFC32
 {
 private:
-    int a;
-    int b;
-    int c;
-    int d;
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
+    unsigned int d;
 
 public:
-    SFC32(int a, int b, int c, int d) : a(a), b(b), c(c), d(d) {}
+    SFC32(unsigned int a, unsigned int b, unsigned int c, unsigned int d) : a(a), b(b), c(c), d(d) {}
 
-    int get_next()
+    unsigned int get_next()
     {
         a >>= 0;
         b >>= 0;
         c >>= 0;
         d >>= 0;
 
-        int t = (a + b) | 0;
+        unsigned int t = (a + b) | 0;
         a = b ^ (b >> 9);
         b = (c + (c << 3)) | 0;
         c = (c << 21) | (c >> 11);
@@ -48,7 +48,8 @@ std::string random_id(
 
     for (int i = 0; i < len; i++)
     {
-        res += chars[sfc.get_next() % num_chars];
+        unsigned int id = sfc.get_next() % num_chars;
+        res += chars[id];
     }
 
     return res;
