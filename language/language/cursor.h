@@ -22,6 +22,7 @@ public:
 	bool eof;
 	bool line_break;
 
+	Cursor() {}
 	Cursor(std::string *i);
 
 	void walk();
@@ -33,12 +34,13 @@ public:
 struct CursorRange
 {
 public:
-	Cursor *start;
-	Cursor *end;
+	Cursor start;
+	Cursor end;
 
-	CursorRange(Cursor *start, Cursor *end) : start(start), end(end) {}
+	CursorRange() {}
+	CursorRange(Cursor start, Cursor end) : start(start), end(end) {}
 	const int length() {
-		return (end->pos - start->pos) + 1;
+		return (end.pos - start.pos) + 1;
 	}
 };
 

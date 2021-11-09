@@ -2,14 +2,14 @@
 #include <sstream>
 #include "../utils.h"
 
-void GDXLanguageParser::replace_range(CursorRange *range, std::string s)
+void GDXLanguageParser::replace_range(CursorRange range, std::string s)
 {
-    std::string prefix = source.substr(0, off + range->start->pos);
-    std::string suffix = source.substr(off + range->end->pos + 1);
+    std::string prefix = source.substr(0, off + range.start.pos);
+    std::string suffix = source.substr(off + range.end.pos + 1);
 
     source = prefix + s + suffix;
 
-    int prevLen = range->length();
+    int prevLen = range.length();
     int newLen = s.length();
 
     off += newLen - prevLen;
@@ -22,7 +22,7 @@ void GDXLanguageParser::get_declarations()
 
     Token *tk;
 
-    while (!lexer->cursor()->eof)
+    while (!lexer->cursor().eof)
     {
         if (lexer->get_next_token(tk))
         {
@@ -60,43 +60,50 @@ void GDXLanguageParser::parse_tag(TagToken *tag)
         if (class_name == "self")
             class_name = "get_script()";
 
-        Cursor start = *tag->range->start;
+        Cursor start = tag->range.start;
         Cursor end = start;
 
-        replace_range(new CursorRange(new Cursor(start), new Cursor(end)), "");
+        replace_range(CursorRange(start, end), "");
 
-        start = *tag->class_name->range->start;
-        end = *tag->class_name->range->end;
+        start = tag->class_name->range.start;
+        end = tag->class_name->range.end;
         std::vector<TagProperty *> props = tag->properties;
         
         std::string id = random_id(
-            4,
-            tag->range->start->line,
-            tag->range->start->column,
-            tag->range->end->line,
-            tag->range->end->column
+            10,
+            tag->range.start.line,
+            tag->range.start.column,
+            tag->range.end.line,
+            tag->range.end.column
         );
 
-        std::string repl = "ReactGD.create_node(" + class_name;
+        std::string repl = "ReactGD.create_node(\"" + id + "\", " + class_name;
         if (props.size() == 0) {
             repl += ", {}";
         } else {
             repl += ", {";
         }
 
-        replace_range(new CursorRange(new Cursor(start), new Cursor(end)), repl);
+        replace_range(CursorRange(start, end), repl);
 
         int i = 0;
 
         for (TagProperty *p : props)
         {
-            start = *p->range->start;
-            end = *p->range->end;
+            start = p->range.start;
+            end = p->range.end;
 
             std::stringstream ss;
 
-            ss << "\"" << p->name << "\": ";
-            ss << p->value;
+            std::string name = p->name;
+            std::string value = p->value;
+
+            if (name.rfind("on_", 0) == 0) {
+                value = "[self, \"" + value + "\"]";
+            }
+
+            ss << "\"" << name << "\": ";
+            ss << value;
 
             if (i != props.size() - 1)
             {
@@ -107,29 +114,37 @@ void GDXLanguageParser::parse_tag(TagToken *tag)
                 ss << "}";
             }
 
-            replace_range(new CursorRange(new Cursor(start), new Cursor(end)), ss.str());
+            replace_range(CursorRange(start, end), ss.str());
 
             i++;
         }
 
         if (tag->type == "SINGLE")
         {
-            end = *tag->range->end;
+            end = tag->range.end;
             start = end;
             start.move(end.pos - 1);
-
-            replace_range(new CursorRange(new Cursor(start), new Cursor(end)), ", [])");
+            
+            if (tree_stack.size() > 0) {
+                replace_range(CursorRange(start, end), ", []),");
+            } else {
+                replace_range(CursorRange(start, end), ", [])");
+            }
         }
         else
         {
-            end = *tag->range->end;
+            end = tag->range.end;
             start = end;
-            replace_range(new CursorRange(new Cursor(start), new Cursor(end)), ", [");
+            replace_range(CursorRange(start, end), ", [");
         }
     }
     else
     {
-        replace_range(tag->range, "])");
+        if (tree_stack.size() > 0) {
+            replace_range(tag->range, "]),");
+        } else {
+            replace_range(tag->range, "])");
+        }
     }
 }
 
@@ -141,7 +156,7 @@ void GDXLanguageParser::parse(std::string &source)
 
     lexer->set_source(new std::string(source));
 
-    get_declarations();
+    //get_declarations();
 
     lexer->reset();
     off = 0;
@@ -149,7 +164,7 @@ void GDXLanguageParser::parse(std::string &source)
 
     Token *tk;
 
-    while (!lexer->cursor()->eof)
+    while (!lexer->cursor().eof)
     {
         if (lexer->get_next_token(tk))
         {
@@ -165,9 +180,23 @@ void GDXLanguageParser::parse(std::string &source)
                 );
             }
             if (tag != nullptr) {
+                if (tag->type == "OPEN") {
+                    tree_stack.push_back(tag);
+                } else if (tag->type == "CLOSE") {
+                    TagToken *parent = tree_stack[tree_stack.size() - 1];
+                    if (tag->class_name->name != parent->class_name->name) {
+                        throw ParseException("This tag is not closing parent tag \'" + parent->class_name->name + "\'", tag->range.start);
+                    }
+                    tree_stack.pop_back();
+                }
                 parse_tag(tag);
             }
         }
+    }
+
+    if (tree_stack.size() > 0) {
+        TagToken *first = tree_stack[tree_stack.size() - 1];
+        throw ParseException("\'" + first->class_name->name + "\' closing tag expected", first->range.end);
     }
 
     source = this->source;

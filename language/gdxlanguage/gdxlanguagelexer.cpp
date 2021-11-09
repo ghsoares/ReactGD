@@ -40,19 +40,19 @@ ImportToken *GDXLanguageLexer::import()
 	close_match();
 	if (found_match())
 	{
-		Cursor *start = get_range(-4)->start;
+		Cursor start = Cursor(get_range(-4).start);
 
-		std::string class_name = *get_str(-3);
+		std::string class_name = get_str(-3);
 
 		expect_next("Expected path string");
 		T_STRING();
 
-		std::string path = *get_str(-1);
+		std::string path = get_str(-1);
 
-		Cursor *end = get_range(-1)->end;
+		Cursor end = Cursor(get_range(-1).end);
 
 		t = new ImportToken(
-			new CursorRange(new Cursor(*start), new Cursor(*end)),
+			CursorRange(start, end),
 			class_name,
 			path.substr(1, path.size() - 2)
 		);
@@ -76,8 +76,8 @@ VariableToken *GDXLanguageLexer::variable(bool require_prefix)
 
 	if (found_match())
 	{
-		std::string var_name = *get_str(-1);
-		Cursor *start = get_range(-2)->start;
+		std::string var_name = get_str(-1);
+		Cursor start = Cursor(get_range(-2).start);
 
 		std::string type = "any";
 		std::string value = "";
@@ -88,7 +88,7 @@ VariableToken *GDXLanguageLexer::variable(bool require_prefix)
 		T_SYMBOL();
 		if (found_match())
 		{
-			type = *get_str(-1);
+			type = get_str(-1);
 		}
 		close_match();
 
@@ -98,14 +98,14 @@ VariableToken *GDXLanguageLexer::variable(bool require_prefix)
 		T_LITERAL();
 		if (found_match())
 		{
-			value = *get_str(-1);
+			value = get_str(-1);
 		}
 		close_match();
 
-		Cursor *end = get_range(-1)->end;
+		Cursor end = Cursor(get_range(-1).end);
 
 		t = new VariableToken(
-			new CursorRange(new Cursor(*start), new Cursor(*end)),
+			CursorRange(start, end),
 			var_name,
 			type,
 			value);
@@ -128,8 +128,8 @@ FunctionToken *GDXLanguageLexer::function()
 
 	if (found_match())
 	{
-		std::string func_name = *get_str(-1);
-		Cursor *start = get_range(-2)->start;
+		std::string func_name = get_str(-1);
+		Cursor start = Cursor(get_range(-2).start);
 		std::vector<VariableToken *> args;
 
 		match("(");
@@ -152,14 +152,14 @@ FunctionToken *GDXLanguageLexer::function()
 		T_SYMBOL();
 		if (found_match())
 		{
-			return_type = *get_str(-1);
+			return_type = get_str(-1);
 		}
 		close_match();
 
-		Cursor *end = get_range(-1)->end;
+		Cursor end = Cursor(get_range(-1).end);
 
 		t = new FunctionToken(
-			new CursorRange(new Cursor(*start), new Cursor(*end)),
+			CursorRange(start, end),
 			func_name,
 			return_type,
 			args);
@@ -184,15 +184,15 @@ TagToken *GDXLanguageLexer::tag()
 
 	if (found_match())
 	{
-		std::string tag_open = *get_str(-1);
-		Cursor *start = get_range(-1)->start;
+		std::string tag_open = get_str(-1);
+		Cursor start = Cursor(get_range(-1).start);
 
 		expect_next("Expected tag class name");
 		T_SYMBOL();
 
 		TagClassName *class_name = new TagClassName(
-			new CursorRange(*get_range(-1)),
-			*get_str(-1)
+			CursorRange(get_range(-1)),
+			get_str(-1)
 		);
 
 		std::vector<TagProperty *> props = tag_properties();
@@ -204,9 +204,9 @@ TagToken *GDXLanguageLexer::tag()
 		match(">");
 		close_match();
 
-		std::string tag_close = *get_str(-1);
-		Cursor *end = get_range(-1)->end;
-		Cursor *tag_close_start = get_range(-1)->start;
+		std::string tag_close = get_str(-1);
+		Cursor end = Cursor(get_range(-1).end);
+		Cursor tag_close_start = Cursor(get_range(-1).start);
 
 		std::string tag_type = "";
 
@@ -234,7 +234,7 @@ TagToken *GDXLanguageLexer::tag()
 		}
 
 		t = new TagToken(
-			new CursorRange(new Cursor(*start), new Cursor(*end)),
+			CursorRange(start, end),
 			tag_type, class_name, props);
 	}
 
@@ -249,7 +249,7 @@ std::vector<TagProperty *> GDXLanguageLexer::tag_properties()
 
 	open_match(true);
 
-	while (!cursor()->eof)
+	while (!cursor().eof)
 	{
 		open_match();
 		T_SYMBOL(true);
@@ -258,12 +258,13 @@ std::vector<TagProperty *> GDXLanguageLexer::tag_properties()
 		close_match();
 		if (found_match())
 		{
-			std::string prop_name = *get_str(-3);
-			Cursor start = *get_range(-3)->start;
+			std::string prop_name = get_str(-3);
+			Cursor start = Cursor(get_range(-3).start);
 
 			this->match("$");
 			bool dollarSign = found_match();
 
+			expect_next("Expected value a");
 			open_match();
 			T_LITERAL();
 			b_or();
@@ -272,14 +273,13 @@ std::vector<TagProperty *> GDXLanguageLexer::tag_properties()
 			T_SYMBOL();
 			b_or();
 			T_GDBLOCK();
-			expect_prev("Expected value");
 			close_match();
 
-			std::string prop_value = dollarSign ? "$" + *get_str(-2) : *get_str(-2);
-			Cursor end = *get_range(-2)->end;
+			std::string prop_value = dollarSign ? "$" + get_str(-2) : get_str(-2);
+			Cursor end = Cursor(get_range(-1).end);
 
 			props.push_back(new TagProperty(
-				new CursorRange(new Cursor(start), new Cursor(end)),
+				CursorRange(start, end),
 				prop_name, prop_value
 			));
 		}
@@ -296,11 +296,13 @@ void GDXLanguageLexer::T_SYMBOL(bool prop)
 {
 	if (prop)
 	{
-		match(std::regex("(_|[a-z]|[A-Z])(_|:|\\.|[a-z]|[A-Z]|[0-9])*"));
+		const static std::regex reg = std::regex("(_|[a-z]|[A-Z])(_|:|\\.|[a-z]|[A-Z]|[0-9])*");
+		match(reg);
 	}
 	else
 	{
-		match(std::regex("(_|[a-z]|[A-Z])(_|\\.|[a-z]|[A-Z]|[0-9])*"));
+		const static std::regex reg = std::regex("(_|[a-z]|[A-Z])(_|\\.|[a-z]|[A-Z]|[0-9])*");
+		match(reg);
 	}
 }
 
@@ -323,21 +325,27 @@ void GDXLanguageLexer::T_STRING(bool multiline)
 
 	if (multiline)
 	{
-		match(std::regex("\"\"\"(.|\n)*\"\"\""));
+		const static std::regex reg = std::regex("\"\"\"(.|\n)*\"\"\"");
+		const static std::regex treg = std::regex("\t");
+		const static std::regex nreg = std::regex("\n");
+		const static std::regex wsreg = std::regex(" +");
+
+		match(std::regex(reg));
 		if (found_match())
 		{
-			std::string ss = *get_str(-1);
+			std::string ss = get_str(-1);
 			ss = ss.substr(2, ss.size() - 4);
-			ss = std::regex_replace(ss, std::regex("\t"), "");
-			ss = std::regex_replace(ss, std::regex("\n"), " ");
-			ss = std::regex_replace(ss, std::regex(" +"), " ");
-			set_str(-1, new std::string(ss));
+			ss = std::regex_replace(ss, std::regex(treg), "");
+			ss = std::regex_replace(ss, std::regex(nreg), " ");
+			ss = std::regex_replace(ss, std::regex(wsreg), " ");
+			set_str(-1, ss);
 		}
 	}
 
 	if (!found_match())
 	{
-		match(std::regex("\".*?\"|\'.*?\'"));
+		const static std::regex reg = std::regex("\".*?\"|\'.*?\'");
+		match(reg);
 	}
 
 	close_match();
@@ -347,10 +355,12 @@ void GDXLanguageLexer::T_FLOAT()
 {
 	open_match();
 
-	//std::regex("\"\"\"(.|\n)*\"\"\"")
-	match(std::regex("[+-]?[0-9]+\\.[0-9]*e[+-]?[0-9]+"));
+	const static std::regex reg1 = std::regex("[+-]?[0-9]+\\.[0-9]*e[+-]?[0-9]+");
+	const static std::regex reg2 = std::regex("[+-]?[0-9]+\\.[0-9]*[fF]?");
+
+	match(std::regex(reg1));
 	b_or();
-	match(std::regex("[+-]?[0-9]+\\.[0-9]*[fF]?"));
+	match(std::regex(reg2));
 
 	close_match();
 }
@@ -359,11 +369,15 @@ void GDXLanguageLexer::T_INT()
 {
 	open_match();
 
-	match(std::regex("[+-]?0x([0-9]|[a-f]|[A-F])+"));
+	const static std::regex reg1 = std::regex("[+-]?0x([0-9]|[a-f]|[A-F])+");
+	const static std::regex reg2 = std::regex("[+-]?0b[01]+");
+	const static std::regex reg3 = std::regex("[+-]?[0-9]+");
+
+	match(std::regex(reg1));
 	b_or();
-	match(std::regex("[+-]?0b[01]+"));
+	match(std::regex(reg2));
 	b_or();
-	match(std::regex("[+-]?[0-9]+"));
+	match(std::regex(reg3));
 
 	close_match();
 }
@@ -380,7 +394,7 @@ void GDXLanguageLexer::T_GDBLOCK()
 	{
 		int lvl = 0;
 
-		while (!cursor()->eof)
+		while (!cursor().eof)
 		{
 			bool walk = true;
 			match("{");
@@ -398,7 +412,7 @@ void GDXLanguageLexer::T_GDBLOCK()
 					break;
 			}
 			if (walk)
-				cursor()->walk();
+				cursor().walk();
 		}
 		if (lvl >= 0)
 		{
@@ -412,16 +426,16 @@ void GDXLanguageLexer::T_GDBLOCK()
 
 	if (found)
 	{
-		std::string s = *get_str(-1);
-		CursorRange *r = get_range(-1);
+		std::string s = get_str(-1);
+		CursorRange r = get_range(-1);
 		set_str(
 			-1,
-			new std::string(s.substr(1, s.size() - 2)));
-		Cursor *start = new Cursor(*r->start);
-		Cursor *end = new Cursor(*r->end);
-		start->move(start->pos + 1);
-		end->move(end->pos - 1);
-		set_range(-1, new CursorRange(start, end));
+			s.substr(1, s.size() - 2));
+		Cursor start = Cursor(r.start);
+		Cursor end = Cursor(r.end);
+		start.move(start.pos + 1);
+		end.move(end.pos - 1);
+		set_range(-1, CursorRange(start, end));
 	}
 }
 
@@ -436,10 +450,14 @@ void GDXLanguageLexer::T_FUNCTION()
 	if (found_match())
 	{
 		int i = 0;
-		while (!cursor()->eof)
+		while (!cursor().eof)
 		{
 			if (i % 2 == 0)
 			{
+				if (i > 0)
+				{
+					expect_next("Expected value b");
+				}
 				open_match();
 				T_LITERAL();
 				b_or();
@@ -448,10 +466,6 @@ void GDXLanguageLexer::T_FUNCTION()
 				T_SYMBOL();
 				b_or();
 				T_GDBLOCK();
-				if (i > 0)
-				{
-					expect_prev("Expected value");
-				}
 				close_match();
 				if (!found_match())
 					break;

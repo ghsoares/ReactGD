@@ -13,7 +13,7 @@ private:
     int off;
     std::vector<TagToken *> tree_stack;
 
-    void replace_range(CursorRange *range, std::string s);
+    void replace_range(CursorRange range, std::string s);
     void get_declarations();
     void parse_tag(TagToken *tag);
 

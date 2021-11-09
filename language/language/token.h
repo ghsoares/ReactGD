@@ -5,9 +5,9 @@
 
 struct Token {
 	public:
-		CursorRange *range;
+		CursorRange range;
 
-		Token(CursorRange *range): range(range) {};
+		Token(CursorRange range): range(range) {};
 		virtual ~Token() {};
 };
 

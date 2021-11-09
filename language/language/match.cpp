@@ -1,11 +1,7 @@
 #include "match.h"
 #include "languagelexer.h"
 
-Match::Match(Cursor *cursor) {
-	this->cursor = cursor;
-	this->range = new CursorRange(
-		new Cursor(*cursor), new Cursor(*cursor)
-	);
+Match::Match(Cursor cursor): cursor(cursor), range(cursor, cursor) {
 	this->matching = true;
 	this->curr_val = false;
 	this->invert = false;
@@ -17,42 +13,44 @@ void Match::test_exception() {
 	if (!exception_msg.empty() && !curr_val) {
 		std::string s = "";
 
-		int p_pos = cursor->pos;
-		while (!cursor->eof) {
+		int p_pos = cursor.pos;
+		while (!cursor.eof) {
 			if (
-				cursor->character == '\n' ||
-				cursor->character == '\t' ||
-				cursor->character == ' '
+				cursor.character == '\n' ||
+				cursor.character == '\t' ||
+				cursor.character == ' '
 			) break;
-			s += cursor->character;
-			cursor->walk();
+			s += cursor.character;
+			cursor.walk();
 		}
-		cursor->move(p_pos);
+		cursor.move(p_pos);
 
 		throw ParseException(
-			exception_msg, new Cursor(*cursor)
+			"Unexpected token " + s + ", " + exception_msg, Cursor(cursor)
 		);
-
-		exception_msg = "";
 	}
+
+	exception_msg = "";
 }
 
-void Match::push_string_stack(std::string *s) {
+void Match::push_string_stack(std::string s) {
 	string_stack.push_back(s);
 }
 
-void Match::push_range_stack(CursorRange *r) {
+void Match::push_range_stack(CursorRange r) {
 	range_stack.push_back(r);
 }
 
-void Match::push_string_stack(std::vector<std::string *> new_stack) {
-	for (int i = 0; i < new_stack.size(); i++) {
+void Match::push_string_stack(std::vector<std::string> new_stack) {
+	int l = new_stack.size();
+	for (int i = 0; i < l; i++) {
 		push_string_stack(new_stack[i]);
 	}
 }
 
-void Match::push_range_stack(std::vector<CursorRange *> new_stack) {
-	for (int i = 0; i < new_stack.size(); i++) {
+void Match::push_range_stack(std::vector<CursorRange> new_stack) {
+	int l = new_stack.size();
+	for (int i = 0; i < l; i++) {
 		push_range_stack(new_stack[i]);
 	}
 }

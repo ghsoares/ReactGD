@@ -10,7 +10,7 @@ public:
 	std::string class_name;
 	std::string relative_path;
 
-	ImportToken(CursorRange *range,
+	ImportToken(CursorRange range,
 				std::string class_name,
 				std::string relative_path) : Token(range),
 											 class_name(class_name),
@@ -25,7 +25,7 @@ public:
 	std::string value;
 
 	VariableToken(
-		CursorRange *range,
+		CursorRange range,
 		std::string name,
 		std::string type,
 		std::string value) : Token(range),
@@ -42,7 +42,7 @@ public:
 	std::vector<VariableToken *> args;
 
 	FunctionToken(
-		CursorRange *range,
+		CursorRange range,
 		std::string name,
 		std::string return_type,
 		std::vector<VariableToken *> args) : Token(range), name(name), return_type(return_type), args(args) {}
@@ -54,7 +54,7 @@ public:
 	std::string name;
 
 	TagClassName(
-		CursorRange *range,
+		CursorRange range,
 		std::string name) : Token(range), name(name) {}
 };
 
@@ -65,7 +65,7 @@ public:
 	std::string value;
 
 	TagProperty(
-		CursorRange *range,
+		CursorRange range,
 		std::string name,
 		std::string value) : Token(range), name(name), value(value) {}
 };
@@ -78,7 +78,7 @@ public:
 	std::vector<TagProperty *> properties;
 
 	TagToken(
-		CursorRange *range,
+		CursorRange range,
 		std::string type,
 		TagClassName *class_name,
 		std::vector<TagProperty *> properties) : Token(range), type(type), class_name(class_name), properties(properties) {}
