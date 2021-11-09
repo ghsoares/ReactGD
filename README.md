@@ -6,7 +6,7 @@ React GD is now a module, that means you need build with the engine source yours
 ### 1. Requirements
 You need some tools to be able to build from source, those requirements are explained in the Godot docs, for [Windows](https://docs.godotengine.org/en/stable/development/compiling/compiling_for_windows.html), [GNU/Linux](https://docs.godotengine.org/en/stable/development/compiling/compiling_for_x11.html) and [MacOS](https://docs.godotengine.org/en/stable/development/compiling/compiling_for_osx.html).
 Also you need to clone the godot source, so in any folder execute:
-`git clone 3.x https://github.com/godotengine/godot.git`
+`git clone -b 3.x https://github.com/godotengine/godot.git`
 This will clone the 3.x branch which is used by this module.
 
 ### 2. Building
