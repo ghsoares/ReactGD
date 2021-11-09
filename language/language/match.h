@@ -17,6 +17,8 @@ public:
 
 	std::vector<std::string> string_stack;
 	std::vector<CursorRange> range_stack;
+	int string_stack_size;
+	int range_stack_size;
 
 	Match() {}
 	Match(Cursor cursor);
@@ -25,8 +27,8 @@ public:
 
 	void push_string_stack(std::string s);
 	void push_range_stack(CursorRange r);
-	void push_string_stack(std::vector<std::string> new_stack);
-	void push_range_stack(std::vector<CursorRange> new_stack);
+	void push_string_stack(std::vector<std::string> new_stack, int len);
+	void push_range_stack(std::vector<CursorRange> new_stack, int len);
 };
 
 #endif
