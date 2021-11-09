@@ -34,9 +34,10 @@ private:
 	std::string *source;
 	Match current_match;
 	std::vector<Match> match_stack;
+	int indent_size;
 
 public:
-	LanguageLexer() {}
+	LanguageLexer(int indent_size = 1): indent_size(indent_size) {}
 
 	void reset();
 	void set_source(std::string *source);

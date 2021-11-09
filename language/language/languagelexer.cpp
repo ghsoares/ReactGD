@@ -3,7 +3,7 @@
 void LanguageLexer::reset()
 {
 	current_match = Match(
-		Cursor(get_source()));
+		Cursor(get_source(), indent_size));
 	match_stack.clear();
 }
 
@@ -162,9 +162,9 @@ void LanguageLexer::match(const std::string str)
 	}
 	else if (current_match.curr_val)
 	{
-		Cursor start = Cursor(current_match.cursor);
+		Cursor start = current_match.cursor;
 		current_match.cursor.walk_times(str.length() - 1);
-		Cursor end = Cursor(current_match.cursor);
+		Cursor end = current_match.cursor;
 
 		current_match.push_string_stack(std::string(s));
 		current_match.push_range_stack(CursorRange(start, end));
@@ -199,9 +199,9 @@ void LanguageLexer::match(const std::regex reg)
 	}
 	else if (current_match.curr_val)
 	{
-		Cursor start = Cursor(current_match.cursor);
+		Cursor start = current_match.cursor;
 		current_match.cursor.walk_times(m.length() - 1);
-		Cursor end = Cursor(current_match.cursor);
+		Cursor end = current_match.cursor;
 
 		current_match.push_string_stack(std::string(m[0]));
 		current_match.push_range_stack(CursorRange(start, end));
@@ -241,8 +241,8 @@ void LanguageLexer::close_match()
 		{
 			current_match.cursor.move(prev_match.cursor.pos);
 
-			current_match.push_string_stack(prev_match.string_stack);
-			current_match.push_range_stack(prev_match.range_stack);
+			current_match.push_string_stack(prev_match.string_stack, prev_match.string_stack_size);
+			current_match.push_range_stack(prev_match.range_stack, prev_match.range_stack_size);
 
 			std::string ss = source->substr(
 				prev_match.range.start.pos,

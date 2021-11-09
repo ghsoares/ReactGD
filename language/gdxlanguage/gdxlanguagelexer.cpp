@@ -40,7 +40,7 @@ ImportToken *GDXLanguageLexer::import()
 	close_match();
 	if (found_match())
 	{
-		Cursor start = Cursor(get_range(-4).start);
+		Cursor start = get_range(-4).start;
 
 		std::string class_name = get_str(-3);
 
@@ -49,7 +49,7 @@ ImportToken *GDXLanguageLexer::import()
 
 		std::string path = get_str(-1);
 
-		Cursor end = Cursor(get_range(-1).end);
+		Cursor end = get_range(-1).end;
 
 		t = new ImportToken(
 			CursorRange(start, end),
@@ -77,7 +77,7 @@ VariableToken *GDXLanguageLexer::variable(bool require_prefix)
 	if (found_match())
 	{
 		std::string var_name = get_str(-1);
-		Cursor start = Cursor(get_range(-2).start);
+		Cursor start = get_range(-2).start;
 
 		std::string type = "any";
 		std::string value = "";
@@ -102,7 +102,7 @@ VariableToken *GDXLanguageLexer::variable(bool require_prefix)
 		}
 		close_match();
 
-		Cursor end = Cursor(get_range(-1).end);
+		Cursor end = get_range(-1).end;
 
 		t = new VariableToken(
 			CursorRange(start, end),
@@ -129,7 +129,7 @@ FunctionToken *GDXLanguageLexer::function()
 	if (found_match())
 	{
 		std::string func_name = get_str(-1);
-		Cursor start = Cursor(get_range(-2).start);
+		Cursor start = get_range(-2).start;
 		std::vector<VariableToken *> args;
 
 		match("(");
@@ -156,7 +156,7 @@ FunctionToken *GDXLanguageLexer::function()
 		}
 		close_match();
 
-		Cursor end = Cursor(get_range(-1).end);
+		Cursor end = get_range(-1).end;
 
 		t = new FunctionToken(
 			CursorRange(start, end),
@@ -185,7 +185,7 @@ TagToken *GDXLanguageLexer::tag()
 	if (found_match())
 	{
 		std::string tag_open = get_str(-1);
-		Cursor start = Cursor(get_range(-1).start);
+		Cursor start = get_range(-1).start;
 
 		expect_next("Expected tag class name");
 		T_SYMBOL();
@@ -205,8 +205,8 @@ TagToken *GDXLanguageLexer::tag()
 		close_match();
 
 		std::string tag_close = get_str(-1);
-		Cursor end = Cursor(get_range(-1).end);
-		Cursor tag_close_start = Cursor(get_range(-1).start);
+		Cursor end = get_range(-1).end;
+		Cursor tag_close_start = get_range(-1).start;
 
 		std::string tag_type = "";
 
@@ -259,7 +259,7 @@ std::vector<TagProperty *> GDXLanguageLexer::tag_properties()
 		if (found_match())
 		{
 			std::string prop_name = get_str(-3);
-			Cursor start = Cursor(get_range(-3).start);
+			Cursor start = get_range(-3).start;
 
 			this->match("$");
 			bool dollarSign = found_match();
@@ -276,7 +276,7 @@ std::vector<TagProperty *> GDXLanguageLexer::tag_properties()
 			close_match();
 
 			std::string prop_value = dollarSign ? "$" + get_str(-2) : get_str(-2);
-			Cursor end = Cursor(get_range(-1).end);
+			Cursor end = get_range(-1).end;
 
 			props.push_back(new TagProperty(
 				CursorRange(start, end),
@@ -431,8 +431,8 @@ void GDXLanguageLexer::T_GDBLOCK()
 		set_str(
 			-1,
 			s.substr(1, s.size() - 2));
-		Cursor start = Cursor(r.start);
-		Cursor end = Cursor(r.end);
+		Cursor start = r.start;
+		Cursor end = r.end;
 		start.move(start.pos + 1);
 		end.move(end.pos - 1);
 		set_range(-1, CursorRange(start, end));
