@@ -1,26 +1,32 @@
-tool
 extends Control
 
-class ClickButton:
+class Component1:
 	extends ReactGDComponent
 	
-	func _ready() -> void:
-		connect("pressed", self, "on_btn_pressed")
+	func _render():
+		return <Button id="Button"/>
+
+class Component2:
+	extends ReactGDComponent
 	
-	func on_btn_pressed() -> void:
-		print("Hello world!")
+	func _render():
+		return <Component1 id="Component1"/>
 
 func _ready() -> void:
 	var n = (
-		<Control>
-			<ClickButton />
-			<Label>
-				<Button/>
-			</Label>
-		</Control>
+		<VBoxContainer id="VBoxContainer">
+			<Component2 id="Component2_1"/>
+			<Component2 id="Component2_2"/>
+		</VBoxContainer>
 	)
 	
-	ReactGD.render(self, n)
+	print(n)
+	
+	#ReactGD.render(self, n)
+
+
+
+
 
 
 
