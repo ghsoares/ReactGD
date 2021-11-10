@@ -9,14 +9,17 @@ Dictionary ReactGD::create_node(String id, Ref<Reference> type, Dictionary props
 	Ref<Script> sc = type;
 	Ref<GDScriptNativeClass> scn = type;
 
-	ERR_FAIL_COND_V_MSG(!sc.is_valid() && !scn.is_valid(), dict, "\"type\" must be a Script or GDScriptNativeClass");
+	//ERR_FAIL_COND_V_MSG(!sc.is_valid() && !scn.is_valid(), dict, "\"type\" must be a Script or GDScriptNativeClass");
 
 	if (props.has("id")) {
 		id = String(props["id"]);
+		props.erase("id");
 	}
 	if (props.has("key")) {
 		id += String(props["key"]);
+		props.erase("key");
 	}
+
 
 	dict["id"] = id;
 	
@@ -39,11 +42,11 @@ bool ReactGD::update_node_props(Node *node, Dictionary props) {
 			auto prop_index = NodePath(key).get_as_property_path().get_subnames();
 			bool valid = false;
 			Variant curr_val = node->get_indexed(prop_index, &valid);
-			ERR_FAIL_COND_V_MSG(!valid, false, "Node of type \'" + node->get_class() + "\' don't have property \'" + key + "\'");
-			
-			if (curr_val != value) {
-				node->set_indexed(NodePath(key).get_as_property_path().get_subnames(), value);
-				changed = true;
+			if (valid) {
+				if (curr_val != value) {
+					node->set_indexed(NodePath(key).get_as_property_path().get_subnames(), value);
+					changed = true;
+				}
 			}
 		} else {
 			Array func_ref = value;
@@ -76,62 +79,31 @@ Node *ReactGD::instantiate(Dictionary node) {
 	return n;
 }
 
-
-void ReactGD::_render(Node *root, Dictionary tree, int &child_id) {
+Node *ReactGD::render(Node *root, Array tree) {
 	Node *curr_node = nullptr;
 
-	String id = tree["id"];
-	Ref<Script> sc = tree["type"];
-	Ref<GDScriptNativeClass> scn = tree["type"];
-	Dictionary props = tree["props"];
-	Array children = tree["children"];
+	int num_children = tree.size();
 
-	bool changed = false;
-
-	if (root->has_node(id)) {
-		curr_node = root->get_node(id);
-	}
-
-	if (curr_node) {
-		changed = update_node_props(curr_node, props);
-		root->move_child(curr_node, child_id);
-	} else {
-		Node *new_node = instantiate(tree);
-		root->add_child(new_node);
-		root->move_child(new_node, child_id);
-		changed = update_node_props(new_node, props);
-		if (sc.is_valid()) {
-			new_node->set_script(sc.get_ref_ptr());
-		}
-		curr_node = new_node;
-	}
-
-	bool component_rendered = false;
-	if (sc.is_valid() && ClassDB::is_parent_class(sc->get_instance_base_type(), "ReactGDComponent")) {
-		if (changed && sc->has_method("_render")) {
-			Dictionary new_render = sc->call("_render");
-			child_id++;
-			int new_child_id = child_id;
-			_render(root, new_render, new_child_id);
+	// First case: First render
+	if (!root->has_meta(META_CACHED_TREE)) {
+		for (int i = 0; i < num_children; i++) {
+			Dictionary node_dict = tree[i];
+			Node *node = instantiate(node_dict);
+			root->add_child(node);
+			Array children = node_dict["children"];
+			if (!children.empty()) {
+				render(node, children);
+			}
 		}
 	}
+	// Second case: Posterior render
+	else {
 
-	child_id++;
-
-	int num_children = children.size();
-
-	int child_idx = 0;
-
-	for (int i = 0; i < num_children; i++) {
-		Dictionary child = children[i];
-
-		_render(curr_node, child, child_idx);
 	}
-}
 
-void ReactGD::render(Node *root, Dictionary tree) {
-	int child_idx = 0;
-	_render(root, tree, child_idx);
+	root->set_meta(META_CACHED_TREE, tree);
+
+	return curr_node;
 }
 
 ReactGD *ReactGD::singleton = nullptr;

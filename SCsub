@@ -23,34 +23,33 @@ def replace_source_file(self, sources, from_file, to_file):
 
 env.__class__.replace_source_file = replace_source_file
 
-if ARGUMENTS.get('reactgd_enabled', 'no') == 'yes':
-    sources = [
-        "register_types.cpp",
-        "language/language/cursor.cpp",
-        "language/language/match.cpp",
-        "language/language/languagelexer.cpp",
-        "language/gdxlanguage/gdxlanguagelexer.cpp",
-        "language/gdxlanguage/gdxlanguageparser.cpp",
-        "reactgd/reactgd.cpp",
-        "reactgd/reactgdcomponent.cpp",
-    ]
+sources = [
+    "register_types.cpp",
+    "language/language/cursor.cpp",
+    "language/language/match.cpp",
+    "language/language/languagelexer.cpp",
+    "language/gdxlanguage/gdxlanguagelexer.cpp",
+    "language/gdxlanguage/gdxlanguageparser.cpp",
+    "reactgd/reactgd.cpp",
+    "reactgd/reactgdcomponent.cpp",
+]
 
-    module_env = env.Clone()
-    module_env.Append(CCFLAGS=['-O2'])
+module_env = env.Clone()
+module_env.Append(CCFLAGS=['-O2'])
 
-    env.replace_source_file(
-        env.modules_sources,
-        "../gdscript/gdscript_parser.cpp",
-        "language/gdxscript_parser.cpp"
-    )
+env.replace_source_file(
+    env.modules_sources,
+    "../gdscript/gdscript_parser.cpp",
+    "language/gdxscript_parser.cpp"
+)
 
-    if ARGUMENTS.get('reactgd_shared', 'no') == 'yes':
-        module_env.Append(CCFLAGS=['-fPIC'])
-        module_env['LIBS'] = []
-        shared_lib = module_env.SharedLibrary(target='#bin/reactgd', source=sources)
-        shared_lib_shim = shared_lib[0].name.rsplit('.', 1)[0]
-        env.Append(LIBS=[shared_lib_shim])
-        env.Append(LIBPATH=['#bin'])
-    else:
-        for s in sources:
-            env.add_source_files(env.modules_sources, s)
+if ARGUMENTS.get('reactgd_shared', 'no') == 'yes':
+    module_env.Append(CCFLAGS=['-fPIC'])
+    module_env['LIBS'] = []
+    shared_lib = module_env.SharedLibrary(target='#bin/reactgd', source=sources)
+    shared_lib_shim = shared_lib[0].name.rsplit('.', 1)[0]
+    env.Append(LIBS=[shared_lib_shim])
+    env.Append(LIBPATH=['#bin'])
+else:
+    for s in sources:
+        env.add_source_files(env.modules_sources, s)

@@ -20,7 +20,7 @@ private:
 public:
     GDXLanguageParser(GDXLanguageLexer *lexer) : lexer(lexer) {}
 
-    void parse(std::string &source);
+    void parse(std::string &source, std::string base_dir);
 };
 
 #endif

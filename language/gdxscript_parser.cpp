@@ -8785,13 +8785,14 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 	GDXLanguageLexer *lexer = new GDXLanguageLexer();
 	GDXLanguageParser *parser = new GDXLanguageParser(lexer);
 
-	lexer->set_indent_size((int)_EDITOR_GET("text_editor/indent/size"));
+	lexer->set_indent_size(4);
 
 	std::string parsed = p_code.utf8().get_data();
+	std::string path = p_base_path.utf8().get_data();
 
 	try {
 		uint32_t gdx_start = OS::get_singleton()->get_ticks_msec();
-		parser->parse(parsed);
+		parser->parse(parsed, path);
 		gdx_elapsed = OS::get_singleton()->get_ticks_msec() - gdx_start;
 	} catch (ParseException &e) {
 		_set_error(

@@ -6,8 +6,8 @@
 static ReactGD *reactgd_instance;
 
 void register_reactgd_types() {
-	ClassDB::register_class<ReactGD>();
 	ClassDB::register_class<ReactGDComponent>();
+
 	reactgd_instance = memnew(ReactGD);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ReactGD", ReactGD::get_singleton()));
 }
