@@ -52,7 +52,7 @@ void GDXLanguageParser::get_declarations()
     }
 }
 
-void GDXLanguageParser::parse_tag(TagToken *tag)
+void GDXLanguageParser::parse_tag(TagToken *tag, bool first, bool last)
 {
     if (tag->type == "SINGLE" || tag->type == "OPEN")
     {
@@ -85,7 +85,7 @@ void GDXLanguageParser::parse_tag(TagToken *tag)
         } else {
             repl += ", {";
         }
-        if (tree_stack.size() == 1) {
+        if (first) {
             repl = "[" + repl;
         }
 
@@ -130,7 +130,7 @@ void GDXLanguageParser::parse_tag(TagToken *tag)
             start = end;
             start.move(end.pos - 1);
             
-            if (tree_stack.size() > 0) {
+            if (!last) {
                 replace_range(CursorRange(start, end), ", []),");
             } else {
                 replace_range(CursorRange(start, end), ", [])]");
@@ -145,7 +145,7 @@ void GDXLanguageParser::parse_tag(TagToken *tag)
     }
     else
     {
-        if (tree_stack.size() > 0) {
+        if (!last) {
             replace_range(tag->range, "]),");
         } else {
             replace_range(tag->range, "])]");
@@ -185,6 +185,8 @@ void GDXLanguageParser::parse(std::string &source, std::string base_dir)
                 );
             }
             if (tag != nullptr) {
+                bool first = tree_stack.size() == 0;
+                bool last = false;
                 if (tag->type == "OPEN") {
                     tree_stack.push_back(tag);
                 } else if (tag->type == "CLOSE") {
@@ -196,8 +198,9 @@ void GDXLanguageParser::parse(std::string &source, std::string base_dir)
                         throw ParseException("This tag is not closing parent tag \'" + parent->class_name->name + "\'", tag->range.start);
                     }
                     tree_stack.pop_back();
+                    last = tree_stack.size() == 0;
                 }
-                parse_tag(tag);
+                parse_tag(tag, first, last);
             }
         }
     }

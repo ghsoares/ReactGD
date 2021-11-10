@@ -15,7 +15,7 @@ private:
 
     void replace_range(CursorRange range, std::string s);
     void get_declarations();
-    void parse_tag(TagToken *tag);
+    void parse_tag(TagToken *tag, bool first, bool last);
 
 public:
     GDXLanguageParser(GDXLanguageLexer *lexer) : lexer(lexer) {}
