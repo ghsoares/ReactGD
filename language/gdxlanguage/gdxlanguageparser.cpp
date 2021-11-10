@@ -199,7 +199,9 @@ void GDXLanguageParser::parse(std::string &source, std::string base_dir)
                     }
                     tree_stack.pop_back();
                     last = tree_stack.size() == 0;
-                }
+                } else if (tag->type == "SINGLE") {
+		    last = tree_stack.size() == 0;
+		}
                 parse_tag(tag, first, last);
             }
         }
