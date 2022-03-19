@@ -8,60 +8,10 @@
 
 config_version=4
 
-_global_script_classes=[ {
-"base": "Container",
-"class": "FlexGridContainer",
-"language": "GDScript",
-"path": "res://Scripts/FlexGridContainer.gd"
-}, {
-"base": "Node",
-"class": "Inventory",
-"language": "GDScript",
-"path": "res://Scripts/Demos/Inventory/Inventory.gd"
-}, {
-"base": "Node",
-"class": "ReactComponent",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Classes/ReactComponent.gd"
-}, {
-"base": "Node",
-"class": "ReactGDDictionaryMethods",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Utility/ReactGDDictionaryMethods.gd"
-}, {
-"base": "Reference",
-"class": "ReactGDTokenizer",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Utility/ReactGDTokenizer.gd"
-}, {
-"base": "Node",
-"class": "ReactGDXParser",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Utility/ReactGDXParser.gd"
-}, {
-"base": "Control",
-"class": "ReactUI",
-"language": "GDScript",
-"path": "res://addons/ReactGD/Classes/ReactUI.gd"
-} ]
-_global_script_class_icons={
-"FlexGridContainer": "",
-"Inventory": "",
-"ReactComponent": "",
-"ReactGDDictionaryMethods": "",
-"ReactGDTokenizer": "",
-"ReactGDXParser": "",
-"ReactUI": ""
-}
-
 [application]
 
 config/name="ReactGD"
 config/icon="res://icon.png"
-
-[editor_plugins]
-
-enabled=PoolStringArray( "res://addons/ReactGD/plugin.cfg" )
 
 [physics]
 
