@@ -3,12 +3,9 @@ ReactGD is a extension tool used to create dynamic UIs with flexibility and effi
 
 Just another prototype, this time using GDScript with better concepts
 
-Requirements:
-    - 3.5+ Godot version, as there is some neat additions for the Theme system
-
 Objectives:
     - Make it modular, it means that any script extending any class can be a reactive component
-    - Make theme applied for the component only, but apply variations for the rendered nodes
+    - Dynamic theme
     - Custom GDX syntax, to create render tree representation using tags
 
 Roadmap:

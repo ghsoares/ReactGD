@@ -104,6 +104,9 @@ static func _set_node_properties(comp: Node, node: Node, props: Dictionary) -> v
 		# Property is a signal
 		if k.begins_with("on_"):
 			_update_signal_connection(comp, node, k.substr(3), props[k])
+		# Property is a theme
+		elif k == "theme":
+			_update_node_theme(node, props[k])
 		# Set the node property
 		else:
 			node.set_indexed(k, props[k])
@@ -130,6 +133,28 @@ static func _update_signal_connection_full(
 	if !node.is_connected(signal_name, comp, method_name):
 		# Connect the signal
 		node.connect(signal_name, comp, method_name, args, flags)
+
+# Update node theme using theme info
+static func _update_node_theme(node: Control, theme_info: Dictionary) -> void:
+	# Get current theme
+	var theme	:= node.theme
+
+	# Is null, create one
+	if theme == null:
+		theme = Theme.new()
+		theme.copy_default_theme()
+
+		# Set current theme
+		node.theme = theme
+
+	# Go for each class name
+	for type_name in theme_info.keys():
+		# Get styleboxes
+		var normal_style	:= theme.get_stylebox("normal", type_name) as StyleBoxFlat
+		var pressed_style	:= theme.get_stylebox("pressed", type_name) as StyleBoxFlat
+		var hover_style		:= theme.get_stylebox("hover", type_name) as StyleBoxFlat
+		var disabled_style	:= theme.get_stylebox("disabled", type_name) as StyleBoxFlat
+		
 
 # Initializes this node as a component
 static func component_init(comp: Node) -> void:
