@@ -42,6 +42,7 @@ class Task:
 				"type": Button,
 				"props": {
 					"text": "Remove",
+					"on_pressed": "on_remove_pressed"
 				},
 				"children": {}
 			}
@@ -49,7 +50,8 @@ class Task:
 
 # Taks:
 # [x] Add a VBoxContainer
-# [ ] Add other components
+# [x] Add multiple Task components when added to state
+# [x] Remove Task components when button inside Task component is pressed
 
 # Called when this node enters the tree
 func _enter_tree() -> void:
@@ -61,7 +63,30 @@ func _process(_delta: float) -> void:
 	# Update the component
 	ReactGD.component_update(self)
 
-# Called when
+# Called when the button is pressed
+func on_button_pressed() -> void:
+	# Get state
+	var state	:= ReactGD.component_get_state(self) as Dictionary
+
+	# Add task
+	state.tasks.append(str(state.inc))
+
+	# Increase increment
+	state.inc += 1
+
+	# Set state
+	ReactGD.component_set_state(self, state)
+
+# Called to remove a task
+func on_task_remove(task) -> void:
+	# Get state
+	var state	:= ReactGD.component_get_state(self) as Dictionary
+
+	# Remove task
+	state.tasks.erase(task)
+
+	# Set state
+	ReactGD.component_set_state(self, state)
 
 # Called to start this component
 func component_start() -> void:
@@ -84,7 +109,11 @@ func component_render() -> Dictionary:
 		tasks[task] = {
 			"type": Task,
 			"props": {
-				"id": task
+				"id": task,
+				"on_remove": {
+					"method": "on_task_remove",
+					"args": [task]
+				}
 			}
 		}
 
@@ -98,9 +127,20 @@ func component_render() -> Dictionary:
 				"anchor_bottom": 1,
 			},
 			"children": {
-				"tasks": {
-					"type": VBoxContainer,
-					"props": {}
+				"scroll": {
+					"type": ScrollContainer,
+					"props": {
+						"size_flags_vertical": Control.SIZE_EXPAND_FILL
+					},
+					"children": {
+						"tasks": {
+							"type": VBoxContainer,
+							"props": {
+								"size_flags_horizontal": Control.SIZE_EXPAND_FILL
+							},
+							"children": tasks
+						}
+					}
 				},
 				"spacer": {
 					"type": HSeparator,
@@ -112,7 +152,8 @@ func component_render() -> Dictionary:
 					"type": Button,
 					"props": {
 						"text": "Add task",
-						"size_flags_horizontal": 0
+						"size_flags_horizontal": 0,
+						"on_pressed": "on_button_pressed"
 					}
 				}
 			}

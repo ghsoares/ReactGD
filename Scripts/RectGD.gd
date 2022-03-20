@@ -60,6 +60,9 @@ static func _update_component_tree(comp: Node, parent: Node, prev_render: Dictio
 			# Create the node
 			node        = type.new() as Node
 
+			# Set the properties
+			_set_node_properties(comp, node, prot.props)
+
 			# Add as child of the parent node
 			parent.add_child(node, true)
 
@@ -70,14 +73,17 @@ static func _update_component_tree(comp: Node, parent: Node, prev_render: Dictio
 			# Get the node reference
 			node    = prev_prot.node as Node
 
+			# Update the properties
+			_set_node_properties(comp, node, prot.props)
+
+			# Mark as dirty, if is a component
+			component_mark_dirty(node)
+
 			# Set the render node reference
 			prot.node = node
-	
+		
 		# Set child index
 		parent.move_child(node, idx)
-
-		# Update the properties
-		_set_node_properties(comp, node, prot.props)
 
 		# Get the children
 		var children        := prot.get("children", {}) as Dictionary
