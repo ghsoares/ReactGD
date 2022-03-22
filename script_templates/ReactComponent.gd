@@ -1,5 +1,8 @@
 extends %BASE%
 
+# The component's data, recommended to not touch it
+var __component_data
+
 # Declare member variables here. Examples:
 # var a%INT_TYPE% = 2
 # var b%STRING_TYPE% = "text"

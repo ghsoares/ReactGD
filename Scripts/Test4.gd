@@ -9,6 +9,11 @@ func _enter_tree() -> void:
 	# Initialize this node as component
 	ReactGD.component_init(self)
 
+# Called when this node exits the tree
+func _exit_tree() -> void:
+	
+	pass
+
 # Called every frame
 func _process(_delta: float) -> void:
 	# Update the component
@@ -26,14 +31,6 @@ func component_render() -> Dictionary:
 			"type": Button,
 			"props": {
 				"text": "Hello World!",
-				"theme": {
-					"Button": {
-						"background_color": Color("#fff"),
-						"border_width":		2,
-						"border_color":		Color("#f00"),
-						"corner_radius":	8,
-					}
-				}
 			}
 		}
 	}

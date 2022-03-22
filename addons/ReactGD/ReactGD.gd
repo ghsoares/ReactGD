@@ -1,21 +1,43 @@
-extends Reference
+extends Node
 class_name ReactGD
+
+# Global component data
+class ComponentData:
+	extends Reference
+
+	# Component state
+	var state				:= {}
+
+	# Component is dirty
+	var dirty				:= false
+
+	# Previous render data
+	var prev_render 		:= {}
+
+# Get the component's data
+static func _component_data(comp: Node) -> ComponentData:
+	return comp.__component_data
+
+# Check if this node is a component
+static func _is_component(node: Node) -> bool:
+	return "__component_data" in node
 
 # Renders the component using object
 static func _render_component(comp: Node) -> void:
+	# Get the component's data
+	var data		:= _component_data(comp)
+
 	# Get the render object
-	var render  := comp.component_render() as Dictionary
+	var render  	:= comp.component_render() as Dictionary
 
 	# Get previous render
-	var prev_render := {}
-	if comp.has_meta("__REACTGD_PREVIOUS_RENDER"):
-		prev_render = comp.get_meta("__REACTGD_PREVIOUS_RENDER")
+	var prev_render	:= data.prev_render
 
 	# Update the component node tree using the render object
 	_update_component_tree(comp, comp, prev_render, render)
 
-	# Set the previous render as meta
-	comp.set_meta("__REACTGD_PREVIOUS_RENDER", render)
+	# Set the previous render as current render
+	data.prev_render = render
 
 # Update the component node tree
 static func _update_component_tree(comp: Node, parent: Node, prev_render: Dictionary, render: Dictionary) -> void:
@@ -77,7 +99,8 @@ static func _update_component_tree(comp: Node, parent: Node, prev_render: Dictio
 			_set_node_properties(comp, node, prot.props)
 
 			# Mark as dirty, if is a component
-			component_mark_dirty(node)
+			if _is_component(node):
+				component_mark_dirty(node)
 
 			# Set the render node reference
 			prot.node = node
@@ -104,9 +127,6 @@ static func _set_node_properties(comp: Node, node: Node, props: Dictionary) -> v
 		# Property is a signal
 		if k.begins_with("on_"):
 			_update_signal_connection(comp, node, k.substr(3), props[k])
-		# Property is a theme
-		elif k == "theme":
-			_update_node_theme(node, props[k])
 		# Set the node property
 		else:
 			node.set_indexed(k, props[k])
@@ -132,79 +152,88 @@ static func _update_signal_connection_full(
 	# Isn't connected
 	if !node.is_connected(signal_name, comp, method_name):
 		# Connect the signal
+		# warning-ignore: RETURN_VALUE_DISCARDED
 		node.connect(signal_name, comp, method_name, args, flags)
 
-# Update node theme using theme info
-static func _update_node_theme(node: Control, theme_info: Dictionary) -> void:
-	# Get current theme
-	var theme	:= node.theme
-
-	# Is null, create one
-	if theme == null:
-		theme = Theme.new()
-		theme.copy_default_theme()
-
-		# Set current theme
-		node.theme = theme
-
-	# Go for each class name
-	for type_name in theme_info.keys():
-		# Get styleboxes
-		var normal_style	:= theme.get_stylebox("normal", type_name) as StyleBoxFlat
-		var pressed_style	:= theme.get_stylebox("pressed", type_name) as StyleBoxFlat
-		var hover_style		:= theme.get_stylebox("hover", type_name) as StyleBoxFlat
-		var disabled_style	:= theme.get_stylebox("disabled", type_name) as StyleBoxFlat
-		
-
 # Initializes this node as a component
-static func component_init(comp: Node) -> void:
-	# This node don't have some crucial method, throw errors
-	assert(comp.has_method("component_render"), "This node don't have a 'component_render' method")
-	assert(comp.has_method("component_start"), "This node don't have a 'component_start' method")
+static func component_init(node: Node) -> void:
+	# This node don't have some crucial methods, throw errors
+	assert(node.has_method("component_render"), "This node don't have a 'component_render' method")
+	assert(node.has_method("component_start"), "This node don't have a 'component_start' method")
 
-	# Set the component's state object
-	comp.set_meta("__REACTGD_COMPONENT_STATE", {})
+	# This node don't have data variable, throw error
+	assert("__component_data" in node, "This node don't have a variable called '__component_data'")
+
+	# Create a new component's data
+	var data	:= ComponentData.new()
+
+	# Set the node's variable to new data
+	node.__component_data = data
 
 	# Call the start method
-	comp.component_start()
+	node.component_start()
 
 	# Render the first time
-	_render_component(comp)
+	_render_component(node)
 
-	# Set the component's dirty meta as false
-	comp.set_meta("__REACTGD_COMPONENT_DIRTY", false)
+	# Set the component's dirty data as false
+	data.dirty = true
 
 # Update the component
 static func component_update(comp: Node) -> void:
+	# If node isn't a component, throw error
+	assert(_is_component(comp), "This node isn't a component")
+
+	# Get the component's data
+	var data	:= _component_data(comp)
+
 	# Check if the component is dirty
-	if comp.get_meta("__REACTGD_COMPONENT_DIRTY"):
+	if data.dirty:
 		# Render it again
 		_render_component(comp)
 
-		# Set the meta as false
-		comp.set_meta("__REACTGD_COMPONENT_DIRTY", false)
+		# Set the data dirty as false
+		data.dirty
 
 # Get the component's state
 static func component_get_state(comp: Node) -> Dictionary:
-	# Return from meta
-	return comp.get_meta("__REACTGD_COMPONENT_STATE")
+	# If node isn't a component, throw error
+	assert(_is_component(comp), "This node isn't a component")
+
+	# Get the component's data
+	var data	:= _component_data(comp)
+
+	# Return from data
+	return data.state
 
 # Set the component's state
 static func component_set_state(comp: Node, state: Dictionary) -> void:
+	# If node isn't a component, throw error
+	assert(_is_component(comp), "This node isn't a component")
+
+	# Get the component's data
+	var data	:= _component_data(comp)
+
 	# Get the previous's state object
-	var prev_state  := component_get_state(comp)
+	var prev_state  := data.state
 
 	# For each new key, add it to the previous state
 	for k in state.keys():
 		prev_state[k] = state[k]
 	
 	# Mark the component as dirty
-	component_mark_dirty(comp)
+	data.dirty = true
 
 # Marks the component as dirty
 static func component_mark_dirty(comp: Node) -> void:
-	# Set the meta as true
-	comp.set_meta("__REACTGD_COMPONENT_DIRTY", true)
+	# If node isn't a component, throw error
+	assert(_is_component(comp), "This node isn't a component")
+
+	# Get the component's data
+	var data	:= _component_data(comp)
+
+	# Set the data dirty as true
+	data.dirty = true
 
 
 

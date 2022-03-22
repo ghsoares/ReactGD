@@ -1,4 +1,8 @@
+tool
 extends Control
+
+# The component's data, recommended to not touch it
+var __component_data
 
 # Taks:
 # [x] Create a button with "Something" as text

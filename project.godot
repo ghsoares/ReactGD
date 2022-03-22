@@ -9,10 +9,10 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Reference",
+"base": "Node",
 "class": "ReactGD",
 "language": "GDScript",
-"path": "res://Scripts/RectGD.gd"
+"path": "res://addons/ReactGD/ReactGD.gd"
 } ]
 _global_script_class_icons={
 "ReactGD": ""
