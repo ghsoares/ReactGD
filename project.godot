@@ -8,16 +8,6 @@
 
 config_version=4
 
-_global_script_classes=[ {
-"base": "Node",
-"class": "ReactGD",
-"language": "GDScript",
-"path": "res://addons/ReactGD/ReactGD.gd"
-} ]
-_global_script_class_icons={
-"ReactGD": ""
-}
-
 [application]
 
 config/name="ReactGD"
