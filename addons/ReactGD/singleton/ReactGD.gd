@@ -8,6 +8,9 @@ class ComponentData:
 	# The component's state dictionary
 	var state := {}
 
+	# Actions that triggered render
+	var actions := {}
+
 	# Dirty flag, if needs to re-render
 	var dirty := true
 
@@ -85,10 +88,16 @@ class PropertyTween:
 		tw.start()
 
 # Global idle process tween node
-var tw_idle	: Tween
+var tw_idle			: Tween
 
 # Global physics process tween node
-var tw_phys	: Tween
+var tw_phys			: Tween
+
+# Global default theme
+var def_theme		: Theme
+
+# Global regex to compile theme definitions
+var def_theme_reg	: RegEx
 
 #region Singleton functions
 
@@ -97,6 +106,14 @@ func _enter_tree() -> void:
 	# Create the tween nodes
 	tw_idle = Tween.new()
 	tw_phys = Tween.new()
+
+	# Create global default theme
+	def_theme = Theme.new()
+	def_theme.copy_default_theme()
+
+	# Create regexes
+	def_theme_reg = RegEx.new()
+	def_theme_reg.compile("(\\w+)\\.(\\w+)\\[([\\w,]+)\\]")
 
 	# Set the physics process tween node process mode
 	tw_phys.playback_process_mode = Tween.TWEEN_PROCESS_PHYSICS
@@ -168,6 +185,37 @@ func component_set_state(comp: CanvasItem, state: Dictionary) -> void:
 	
 	# Mark the component as dirty
 	data.dirty = true
+
+# Trigger action
+func component_trigger_action(comp: CanvasItem, action: String) -> void:
+	# Checks if is component
+	assert(is_component(comp), "Node isn't a component, call 'component_init' to initialize as a component")
+	
+	# Get the component's data
+	var data        	:= comp.__component_data as ComponentData
+
+	# Get the component's current actions
+	var curr_actions	:= data.actions
+
+	# Add action string
+	curr_actions[action] = true
+
+	# Mark the component as dirty
+	data.dirty = true
+
+# Return if a action was triggered
+func component_triggered_action(comp: CanvasItem, action: String) -> bool:
+	# Checks if is component
+	assert(is_component(comp), "Node isn't a component, call 'component_init' to initialize as a component")
+	
+	# Get the component's data
+	var data        	:= comp.__component_data as ComponentData
+
+	# Get the component's current actions
+	var curr_actions	:= data.actions
+
+	# Return from the data
+	return curr_actions.get(action, false)
 
 # Create a new property animation
 func do_tween() -> PropertyTween:
@@ -255,8 +303,7 @@ func _update_node_properties(comp: CanvasItem, node: CanvasItem, prev: Dictionar
 
 		# Property is a signal
 		if prop_name.begins_with("on_"):
-			# Set signal
-			_set_node_signal(comp, node, prop_name.substr(3), curr_value)
+			_set_node_signal(comp, node, prop_name.substr(3), prev_value, curr_value)
 		# Simple property
 		else:
 			_set_node_prop(comp, node, prop_name, prev_value, curr_value)
@@ -269,11 +316,13 @@ func _set_node_prop(
 	# The value didn't change, so return
 	if curr_value == prev_value: return
 
-	# Current value is animation
-	if curr_value is PropertyTween:
+	# Previous value is animation
+	if prev_value is PropertyTween:
 		# Force stop previous animation
 		tw_idle.remove(node, prop_name)
 
+	# Current value is animation
+	if curr_value is PropertyTween:
 		# Animate
 		curr_value._animate(tw_idle, prop_name, node)
 	else:
@@ -283,7 +332,7 @@ func _set_node_prop(
 # Set node signal
 func _set_node_signal(
 	comp: CanvasItem, node: CanvasItem, signal_name: String, 
-	curr_params: Dictionary
+	prev_params, curr_params: Dictionary
 ) -> void:    
 	# The target method
 	var target_method   := curr_params.target_method as String
