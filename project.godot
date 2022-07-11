@@ -8,6 +8,28 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "ReactGDNode",
+"class": "ReactGDComponent",
+"language": "GDScript",
+"path": "res://addons/ReactGD/ReactGDComponent.gd"
+}, {
+"base": "Node",
+"class": "ReactGDNode",
+"language": "GDScript",
+"path": "res://addons/ReactGD/ReactGDNode.gd"
+}, {
+"base": "ReactGDNode",
+"class": "ReactGDVirtualNodeTree",
+"language": "GDScript",
+"path": "res://addons/ReactGD/ReactGDNodeTree.gd"
+} ]
+_global_script_class_icons={
+"ReactGDComponent": "",
+"ReactGDNode": "",
+"ReactGDVirtualNodeTree": ""
+}
+
 [application]
 
 config/name="ReactGD"
@@ -15,7 +37,7 @@ config/icon="res://icon.png"
 
 [autoload]
 
-ReactGD="*res://addons/ReactGD/singleton/ReactGD.gd"
+ReactGD="*res://addons/ReactGD/ReactGD.gd"
 
 [editor_plugins]
 
