@@ -12,22 +12,22 @@ _global_script_classes=[ {
 "base": "ReactGDNode",
 "class": "ReactGDComponent",
 "language": "GDScript",
-"path": "res://addons/ReactGD/ReactGDComponent.gd"
+"path": "res://addons/ReactGD/DOM/ReactGDComponent.gd"
 }, {
 "base": "Node",
 "class": "ReactGDNode",
 "language": "GDScript",
-"path": "res://addons/ReactGD/ReactGDNode.gd"
+"path": "res://addons/ReactGD/DOM/ReactGDNode.gd"
 }, {
-"base": "ReactGDNode",
-"class": "ReactGDVirtualNodeTree",
+"base": "Node",
+"class": "ReactGDNodeTree",
 "language": "GDScript",
-"path": "res://addons/ReactGD/ReactGDNodeTree.gd"
+"path": "res://addons/ReactGD/DOM/ReactGDNodeTree.gd"
 } ]
 _global_script_class_icons={
 "ReactGDComponent": "",
 "ReactGDNode": "",
-"ReactGDVirtualNodeTree": ""
+"ReactGDNodeTree": ""
 }
 
 [application]
