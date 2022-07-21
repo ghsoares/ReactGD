@@ -38,15 +38,8 @@ func _ready() -> void:
 
 	node_tree.render({
 		"id": "root",
-		"type": VBoxContainer,
+		"type": ButtonComponent,
 		"children": {
-			"idx0": {
-				"id": "idx0",
-				"type": ButtonComponent,
-				"props": {
-					"label_text": "Hello from first label!",
-					"button_text": "Hello from first button!"
-				}
-			}
+			
 		}
 	})
