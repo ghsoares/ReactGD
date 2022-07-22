@@ -9,25 +9,31 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "ReactGDNode",
+"base": "Node",
 "class": "ReactGDComponent",
 "language": "GDScript",
-"path": "res://addons/ReactGD/DOM/ReactGDComponent.gd"
+"path": "res://addons/ReactGD/runtime/ReactGDComponent.gd"
 }, {
-"base": "Node",
-"class": "ReactGDNode",
+"base": "Reference",
+"class": "ReactGDTheme",
 "language": "GDScript",
-"path": "res://addons/ReactGD/DOM/ReactGDNode.gd"
+"path": "res://addons/ReactGD/runtime/ReactGDTheme.gd"
 }, {
-"base": "Node",
-"class": "ReactGDNodeTree",
+"base": "Reference",
+"class": "ReactGDTreeData",
 "language": "GDScript",
-"path": "res://addons/ReactGD/DOM/ReactGDNodeTree.gd"
+"path": "res://addons/ReactGD/runtime/ReactGDTreeData.gd"
+}, {
+"base": "Reference",
+"class": "ReactGDTween",
+"language": "GDScript",
+"path": "res://addons/ReactGD/runtime/ReactGDTween.gd"
 } ]
 _global_script_class_icons={
 "ReactGDComponent": "",
-"ReactGDNode": "",
-"ReactGDNodeTree": ""
+"ReactGDTheme": "",
+"ReactGDTreeData": "",
+"ReactGDTween": ""
 }
 
 [application]
@@ -38,6 +44,10 @@ config/icon="res://icon.png"
 [autoload]
 
 ReactGD="*res://addons/ReactGD/ReactGD.gd"
+
+[debug]
+
+gdscript/warnings/enable=false
 
 [editor_plugins]
 
